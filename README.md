@@ -36,4 +36,3 @@ Troubleshooting
 - Ensure the SVG/image files exist in `frontend/public/` and paths match exactly.
 - If lint or format rules block a commit, run `pnpm lint` or adjust the staged files and commit only the intended changes.
 
-If you want, I can also add a short `CONTRIBUTING.md` or a one-line script in `package.json` to make these steps even easier.
