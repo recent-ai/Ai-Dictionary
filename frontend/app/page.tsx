@@ -122,7 +122,7 @@ export default function Home() {
 
               <div className="bg-slate-900 rounded-lg md:rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <img
-                  src="setup.jpg"
+                  src="/setup.jpg"
                   alt="Development"
                   className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
                 />
