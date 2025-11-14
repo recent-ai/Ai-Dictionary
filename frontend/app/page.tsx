@@ -136,7 +136,7 @@ export default function Home() {
                 </p>
 
                 <h3 className="text-xl sm:text-2xl md:text-2xl font-bold text-white leading-tight mb-3">
-                  How to make a Game look more attractive with VR & AI
+                  How to make a Game look more attractive with New VR & AI Technology
                 </h3>
 
                 <p className="text-sm md:text-base text-gray-200 leading-relaxed opacity-80 mb-4">
