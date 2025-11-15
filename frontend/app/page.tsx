@@ -12,7 +12,7 @@ export default function Home() {
 
         {/* ---------------- HERO SECTION ---------------- */}
         <main className="bg-gray-950 relative min-h-screen overflow-hidden">
-          <div className="absolute inset-0 bg-linear-to-r ">
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-950 to-gray-900 ">
 
             {/* Floating wave animation */}
             <motion.img
