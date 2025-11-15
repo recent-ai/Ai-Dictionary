@@ -36,7 +36,6 @@ export default function Navbar() {
         borderRadius: navRadius,
         y: navY,
         boxShadow: navShadow,
-        
         backdropFilter: blur,
       }}
       transition={{ duration: 0.3, ease: "easeOut" }}
