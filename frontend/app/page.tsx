@@ -2,6 +2,7 @@
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import  Image  from "next/image";
 
 export default function Home() {
   return (
@@ -12,7 +13,7 @@ export default function Home() {
 
         {/* ---------------- HERO SECTION ---------------- */}
         <main className="bg-gray-950 relative min-h-screen overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-950 to-gray-900 ">
+          <div className="absolute inset-0 bg-linear-to-r from-gray-900 via-gray-950 to-gray-900 ">
 
             {/* Floating wave animation */}
             <motion.img
@@ -84,11 +85,12 @@ export default function Home() {
                     animate={{ y: [0, -10, 0] }}
                     transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <img
-                      src="/undraw_ai-agent_pdkp.svg"
-                      alt="AI Agent illustration"
-                      className="w-full h-full object-cover"
-                    />
+                    <Image 
+                    src="/undraw_ai-agent_pdkp.svg"
+                    width={500}
+                    height={500}
+                    alt = "AI Agent illustration"
+                    /> 
                   </motion.div>
                 </motion.div>
               </div>
