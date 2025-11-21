@@ -48,7 +48,7 @@ export default function Navbar() {
       <NavigationMenu>
         <NavigationMenuList className="flex items-center gap-4">
           {["Blog", "About", "Search"].map((item) => (
-            <AnimatedNavItem key={item} label={item} href="/" />
+            <AnimatedNavItem key={item} label={item} href={`/${item.toLowerCase()}`} />
           ))}
 
           {/* ALWAYS READABLE BUTTON */}
