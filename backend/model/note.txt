@@ -1,0 +1,8 @@
+user models
+post models
+artical model
+share model  
+
+
+the pydantic validation models of everything should be here .either from seperate file or from 
+same file but seperate classes.
