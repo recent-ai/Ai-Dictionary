@@ -1,6 +1,6 @@
 all  the business logic should be here with each name, 
 if bot then botservice
-if sharing linke then sharing service
+if sharing link then sharing service
 increase count then like count service,
 
 
