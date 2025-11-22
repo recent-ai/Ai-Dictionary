@@ -1,4 +1,4 @@
-API -> contains the apis build from scratch or the exsisting calling
+API -> contains the apis build from scratch or the existing calling
 
 CORE -> config and logging handled from this folder
 
