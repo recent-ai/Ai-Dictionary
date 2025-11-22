@@ -1,6 +1,6 @@
 user models
 post models
-artical model
+article model
 share model  
 
 
