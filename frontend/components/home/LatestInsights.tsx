@@ -58,6 +58,7 @@ export function LatestInsights() {
               </div>
               <div className="space-y-2 flex-1 flex flex-col">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  {/* Placeholder/mockup date for demo purposes */}
                   <span>Nov 21, 2025</span>
                   <span>•</span>
                   <span>5 min read</span>
