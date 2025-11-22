@@ -27,7 +27,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <div className="mx-auto max-w-[1440px] min-h-screen bg-background border-x border-border shadow-2xl transition-colors duration-100">
+          <div className="mx-auto max-w-[1440px] min-h-screen bg-background border-x border-border shadow-2xl transition-colors duration-500">
             {children}
           </div>
         </ThemeProvider>
