@@ -2,13 +2,13 @@ import os
 from ph_wrapper import ProductHuntWrapper
 from dotenv import load_dotenv
 
-'''Testing Product Hunt Wrapper Functions'''
-'''Ensure you have set the environment variable "product_hunt_access_token" with your Product Hunt API access token before running the tests.'''
-'''Generate access token from - https://www.producthunt.com/v2/oauth/applications'''
-''' TO TEST CREATE A .env FILE IN THE backend/ DIRECTORY AND ADD THE FOLLOWING LINE:
-product_hunt_access_token="YOUR_ACCESS_TOKEN_HERE"
-'''
-'''THEN RUN `uv run backend/services/product_hunt_wrapper/test_ph_wrapper.py`'''
+# Testing Product Hunt Wrapper Functions
+# Ensure you have set the environment variable "product_hunt_access_token" with your Product Hunt API access token before running the tests.
+# Generate access token from - https://www.producthunt.com/v2/oauth/applications
+# TO TEST CREATE A .env FILE IN THE backend/ DIRECTORY AND ADD THE FOLLOWING LINE:
+# product_hunt_access_token="YOUR_ACCESS_TOKEN_HERE"
+#
+# THEN RUN `uv run backend/services/product_hunt_wrapper/test_ph_wrapper.py`
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
 
