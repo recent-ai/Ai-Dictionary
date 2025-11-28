@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 '''A wrapper around Product Hunt API to fetch top products based on topics for the previous day.'''
 
-'''NOTE: This still requires further improvements like error handling, formating the code, adding more topics, and MAJOR is to format the output in a better way.'''
+'''NOTE: This still requires further improvements like error handling, formatting the code, adding more topics, and MAJOR is to format the output in a better way.'''
 
 '''Date Check Function to get yesterday's date in required format'''
 def date_check():
