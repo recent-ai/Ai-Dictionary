@@ -1,4 +1,8 @@
+"use client";
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation";
+import {useState} from 'react'
+import { handleSignup } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -19,6 +23,26 @@ export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleSubmit = async (e:React.FormEvent)=>{
+    e.preventDefault(); 
+    try {
+      const result = await handleSignup({email,password});
+      setSuccess("User Registred Successfuly!");
+      setError("");
+      router.push('/login');
+    }catch (err:unknown){
+      if (err instanceof Error)
+        {setError(err.message);
+          setSuccess("");
+        }
+    }
+  };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -29,7 +53,7 @@ export function SignupForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="name">Full Name</FieldLabel>
@@ -41,6 +65,7 @@ export function SignupForm({
                   id="email"
                   type="email"
                   placeholder="m@example.com"
+                  onChange={(e)=> setEmail(e.target.value)}
                   required
                 />
               </Field>
@@ -48,7 +73,7 @@ export function SignupForm({
                 <Field className="grid grid-cols-2 gap-4">
                   <Field>
                     <FieldLabel htmlFor="password">Password</FieldLabel>
-                    <Input id="password" type="password" required />
+                    <Input id="password" type="password" onChange={(e)=> setPassword(e.target.value)} required />
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="confirm-password">
@@ -64,7 +89,7 @@ export function SignupForm({
               <Field>
                 <Button type="submit">Create Account</Button>
                 <FieldDescription className="text-center">
-                  Already have an account? <a href="#">Sign in</a>
+                  Already have an account? <a href="/signin">Sign in</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
