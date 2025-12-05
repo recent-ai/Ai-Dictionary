@@ -8,17 +8,22 @@ export interface TitleBlock extends Block {
     type: 'title';
     data: {
         content: string,
-    }
-}
-
-export interface DifficulyBlock extends Block {
-    type: 'difficuly';
-    data: {
-        level: 'beginner' | 'intermediate' | 'advanced';
-        content: string
+        date : Date,
+        tags?: string[]
+        difficulty?: 'beginner' | 'intermediate' | 'advanced'
+        author?: string,
         estimated_time?: string
     }
 }
+
+// export interface DifficulyBlock extends Block {
+//     type: 'difficuly';
+//     data: {
+//         level: 'beginner' | 'intermediate' | 'advanced';
+//         content: string
+//         
+//     }
+// }
 
 export interface SummaryBlock extends Block {
     type: 'summary';
@@ -74,4 +79,4 @@ export interface RelatedTopicsBlock extends Block {
 }
 
 export type AllContentBlock =
-    TitleBlock | SummaryBlock | CodeBlock | ImageBlock | DiagramBlock | ExplainationBlock | ExampleBlock | RelatedTopicsBlock | DifficulyBlock;
+    TitleBlock | SummaryBlock | CodeBlock | ImageBlock | DiagramBlock | ExplainationBlock | ExampleBlock | RelatedTopicsBlock;
