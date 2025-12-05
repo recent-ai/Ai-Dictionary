@@ -35,7 +35,7 @@ export default function Navbar() {
                   asChild
                   className={navigationMenuTriggerStyle()}
                 >
-                  <Link href="/blog">Blog</Link>
+                  <Link href="/blogs">Blog</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>

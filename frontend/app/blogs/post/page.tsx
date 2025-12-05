@@ -98,7 +98,7 @@ export default function Page() {
             <Home className="w-3.5 h-3.5" /> Home
           </Link>
           <ChevronRight className="w-4 h-4" />
-          <Link href="/blog" className="hover:text-primary transition-colors">
+          <Link href="/blogs" className="hover:text-primary transition-colors">
             Blog
           </Link>
           <ChevronRight className="w-4 h-4" />
