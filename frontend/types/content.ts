@@ -8,7 +8,7 @@ export interface TitleBlock extends Block {
     type: 'title';
     data: {
         content: string,
-        date : Date,
+        date : string,
         tags?: string[]
         difficulty?: 'beginner' | 'intermediate' | 'advanced'
         author?: string,

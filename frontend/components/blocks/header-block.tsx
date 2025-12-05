@@ -28,8 +28,8 @@ export function TitleComponent({
           </span> */}
         {tags && (
           <div className="flex flex-wrap gap-3">
-            {tags.map((tag) => (
-              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
+            {tags.map((tag, index) => (
+              <span key={index} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
                 {tag}
               </span>
             ))}
@@ -61,7 +61,7 @@ export function TitleComponent({
 
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" /> {date.toUTCString().slice(4, 16)}
+              <Calendar className="w-4 h-4" /> {date}
             </span>
             <span className="flex items-center gap-2">
               <Clock className="w-4 h-4" /> {estimated_time} read

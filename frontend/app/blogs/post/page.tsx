@@ -16,8 +16,8 @@ const MOCK_DATA: AllContentBlock[] = [
       level: 1,
       tags: ["System Design", "LLMs", "AI Agents"],
       author: "Harsh (You)",
-      date: new Date("2024-08-15"),
-      readTime: "10 min read",
+      date: "August 15, 2024",
+      estimated_time: "10 min read",
       difficulty: "Intermediate"
     } as any // Cast because our base type is strict, but we extended the component
   },

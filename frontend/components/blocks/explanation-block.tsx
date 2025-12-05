@@ -14,15 +14,10 @@ export function ExplanationComponent({ content }: Props) {
       className="prose prose-lg dark:prose-invert max-w-none mb-16"
     >
       <h2 className="text-3xl font-bold mb-6 tracking-tight">
-        Deep Dive into Architecture
+        Deep Dive {/*Generalized Now*/}
       </h2>
       <p className="text-muted-foreground leading-relaxed mb-6">
         {content}
-      </p>
-      <p className="text-muted-foreground leading-relaxed">
-        Key components include the <strong>Memory Module</strong>, which stores
-        short-term and long-term history, and the <strong>Planner</strong>,
-        which breaks down complex goals into executable steps.
       </p>
     </motion.section>
   );
