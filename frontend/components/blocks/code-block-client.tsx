@@ -16,8 +16,6 @@ export function CodeBlockClient({ html, filename }: Props) {
       viewport={{ once: true }}
       className="rounded-xl border border-border bg-card overflow-hidden shadow-sm"
     >
-      className="rounded-xl border border-border bg-card overflow-hidden shadow-sm"
-    >
       <div className="bg-muted/50 px-4 py-3 border-b border-border flex items-center justify-between">
         <span className="text-xs font-mono text-muted-foreground flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-blue-500" />
