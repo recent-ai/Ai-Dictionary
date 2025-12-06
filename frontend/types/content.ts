@@ -36,7 +36,8 @@ export interface CodeBlock extends Block {
     type: 'code';
     data: {
         content: string
-        language?: string
+        language?: string,
+        filename? : string
     }
 }
 
