@@ -11,9 +11,11 @@ export function CodeBlockClient({ html, filename }: Props) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
+      whileInView={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
       viewport={{ once: true }}
+      className="rounded-xl border border-border bg-card overflow-hidden shadow-sm"
+    >
       className="rounded-xl border border-border bg-card overflow-hidden shadow-sm"
     >
       <div className="bg-muted/50 px-4 py-3 border-b border-border flex items-center justify-between">
