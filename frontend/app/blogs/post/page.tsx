@@ -1,11 +1,9 @@
-"use client";
-
-import { BlockRenderer } from "@/components/blocks/block-renderer";
-import Navbar from "@/components/Navbar";
 import { AllContentBlock } from "@/types/content";
-import { motion, useScroll, useSpring } from "framer-motion";
+import { BlockRenderer } from "@/components/blocks/block-renderer";
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
+import { ScrollProgress } from "@/components/scroll-progress";
 
 const MOCK_DATA: AllContentBlock[] = [
   {
@@ -32,18 +30,35 @@ const MOCK_DATA: AllContentBlock[] = [
     id: "3",
     type: "code", // Maps to CodeComponent
     data: {
-      language: "python",
-      // filename: "agent_config.py",
-      content: `class Agent:
-    def __init__(self, name, model):
-        self.name = name
-        self.model = model
-        self.memory = []
+      language: "typescript",
+      filename: "example.ts",
+      content: `interface Person {
+  name: string;
+  age: number;
+  isStudent?: boolean; // Optional property
+}
 
-    def think(self, context):
-        # Process context
-        plan = self.model.generate(context)
-        return plan`
+// Function with type annotations for parameters and return value
+function greetPerson(person: Person): string {
+  let greeting = Hello, my name is  and I am  years old.
+  if (person.isStudent) {
+    greeting += " I am also a student.";
+  }
+  return greeting;
+}
+
+// Create objects conforming to the Person interface
+const person1: Person = {
+  name: "Alice",
+  age: 30,
+  isStudent: false,
+};
+
+const person2: Person = {
+  name: "Bob",
+  age: 22,
+  isStudent: true,
+};`
     }
   },
   
@@ -75,19 +90,10 @@ const MOCK_DATA: AllContentBlock[] = [
 
 
 export default function Page() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 110,
-    damping: 20,
-    restDelta: 0.001,
-  });
+  
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/10 selection:text-primary relative">
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-primary origin-left z-60"
-        style={{ scaleX }}
-      />
-
+      <ScrollProgress />
       <Navbar />
       <main className="container mx-auto px-4 pb-20 max-w-4xl">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground py-8 overflow-x-auto whitespace-nowrap">
