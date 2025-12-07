@@ -1,3 +1,5 @@
+"use client";
+
 import { ExplanationBlock } from "@/types/content";
 import { motion } from "framer-motion";
 

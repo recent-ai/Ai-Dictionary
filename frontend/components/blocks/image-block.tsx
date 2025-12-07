@@ -1,3 +1,5 @@
+"use client";
+
 import { ImageBlock } from "@/types/content";
 import { motion } from "framer-motion";
 

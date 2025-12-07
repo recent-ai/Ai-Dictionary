@@ -1,3 +1,5 @@
+"use client";
+
 import { RelatedTopicsBlock } from "@/types/content";
 import { motion } from "framer-motion";
 

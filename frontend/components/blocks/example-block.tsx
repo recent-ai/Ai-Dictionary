@@ -1,3 +1,5 @@
+"use client";
+
 import { ExampleBlock } from "@/types/content";
 import { motion } from "framer-motion";
 import { Bookmark } from "lucide-react";

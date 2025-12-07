@@ -1,3 +1,5 @@
+"use client";
+
 import { TitleBlock } from "@/types/content";
 import { motion } from "framer-motion";
 import { BarChart2, Calendar, Clock, User } from "lucide-react";
