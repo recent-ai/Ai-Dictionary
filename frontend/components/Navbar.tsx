@@ -35,7 +35,7 @@ export default function Navbar() {
                   asChild
                   className={navigationMenuTriggerStyle()}
                 >
-                  <Link href="/blog">Blog</Link>
+                  <Link href="/blogs">Blog</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
@@ -76,7 +76,7 @@ export default function Navbar() {
         <div className="md:hidden border-t border-border/40 bg-background">
           <div className="container py-4 flex flex-col gap-4 px-4">
             <Link
-              href="/blog"
+              href="/blogs"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               onClick={() => setIsOpen(false)}
             >
