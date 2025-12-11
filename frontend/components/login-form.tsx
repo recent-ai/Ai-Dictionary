@@ -26,7 +26,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const [load, setLoad] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState("");
   const router = useRouter(); //Simple Router Hook for redirecting after successful login
 
   async function handleLoginSubmit(e: React.FormEvent) {
@@ -38,9 +38,9 @@ export function LoginForm({
     const password = form.password.value;
     
     try{
-      const formData = await loginUser(username, password);
+      const formData = await loginUser({ username, password });
       localStorage.setItem("access_token", formData.access_token);
-      setUser(formData.data);
+      setUser(formData.access_token);
       console.log("Login Successful"); // For Debugging
       router.push("/");
     } catch (error) {
