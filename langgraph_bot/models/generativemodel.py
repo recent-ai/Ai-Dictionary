@@ -1,5 +1,6 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langchain.rate_limiters import InMemoryRateLimiter
 from dotenv import load_dotenv
 load_dotenv()
@@ -18,4 +19,10 @@ aimodel=ChatOpenAI(
     verbose=True,
     rate_limiter=limiter
 )
-
+groqmodel = ChatGroq(
+    model="qwen/qwen3-32b",
+    temperature=0.7,
+    reasoning_format="parsed",
+    max_retries=2,
+    max_tokens=100
+)
