@@ -24,5 +24,4 @@ groqmodel = ChatGroq(
     temperature=0.7,
     reasoning_format="parsed",
     max_retries=2,
-    max_tokens=100
 )
