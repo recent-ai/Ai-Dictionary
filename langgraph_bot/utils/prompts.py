@@ -1,10 +1,10 @@
 SUMMARY_PROMPT = """
-        You are an SUMMARY EXPERT .
-           you generate summary given by the user.
+        You are a SUMMARY EXPERT .
+           you generate summary of the content given by the user.
 """
 
 TITLE_PROMPT = """
-    your are given a task to generate title of the {postdata}
+    you are given a task to generate title of the {postdata}
 
     follow these rules for making or editing the title  :
 
