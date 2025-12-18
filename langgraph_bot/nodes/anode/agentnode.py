@@ -16,12 +16,10 @@ def summary_agent_node(state:State):
 
     response =  agent.invoke({"messages":[HumanMessage(content=last_message)]})
 
-    summary = response["messages"][-1].content
-    #  If agent returns a message then append directly
-    if isinstance(response, BaseMessage):
-        return {"messages": [response],"summary":summary}
+
 
     # If agent returns dict with messages then extract them
     if isinstance(response, dict) and "messages" in response:
+        summary = response["messages"][-1].content
         return {"messages": response["messages"],"summary":summary}
     return {"messages":[response],"summary":summary}
