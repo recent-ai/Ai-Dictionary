@@ -1,14 +1,12 @@
+load_dotenv()
 from agentschema.stateschema import State
 from dotenv import load_dotenv
-load_dotenv()
 from typing import Optional
 from models.generativemodel import groqmodel
 from utils.prompts import TITLE_PROMPT
 from langchain.tools import  tool,ToolRuntime
 from langchain.messages import ToolMessage
 from langgraph.types import Command
-postdata= "demo"
-posttitle ="demo"
 
 
 @tool
