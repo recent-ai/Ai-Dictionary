@@ -8,10 +8,10 @@ def summary_agent_node(state:State):
     content: 
     Here is the data to summarize = {state['data']} 
     Here is the default title = {state['title']}
-    here is the default topic = {state['topic']}
+    Here is the default topic = {state['topic']}
     
-    keep it professional and easy to understand , cover main important topics to understand it.
-    only give summary in the response nothing else.
+    Keep it professional and easy to understand, cover main important topics to understand it.
+    Only give the summary in the response nothing else.
     """
 
     response =  agent.invoke({"messages":[HumanMessage(content=last_message)]})
