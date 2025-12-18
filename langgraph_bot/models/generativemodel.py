@@ -8,7 +8,7 @@ load_dotenv()
 
 limiter = InMemoryRateLimiter(requests_per_second=0.5,check_every_n_seconds=10,max_bucket_size=1)
 model = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash-live",
+    model="gemini-2.5-flash",
     temperature=1.0,  # Gemini 3.0+ defaults to 1.0
     max_retries=5)
 
