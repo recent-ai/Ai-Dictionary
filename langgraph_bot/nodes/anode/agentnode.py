@@ -6,11 +6,11 @@ from langchain_core.messages import BaseMessage,HumanMessage
 def summary_agent_node(state:State):
     last_message =  f"""Make the summary using the data given below 
     content: 
-    Here is the data to summarize = {state['data']} \
-    Here is the default title = {state['title']}\
-    here is the default topic = {state['topic']}\
+    Here is the data to summarize = {state['data']} 
+    Here is the default title = {state['title']}
+    here is the default topic = {state['topic']}
     
-    keep is professional and easy to understand , cover main important topics to understand it.
+    keep it professional and easy to understand , cover main important topics to understand it.
     only give summary in the response nothing else.
     """
 
