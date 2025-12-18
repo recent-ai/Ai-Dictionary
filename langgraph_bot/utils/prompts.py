@@ -1,7 +1,6 @@
 SUMMARY_PROMPT = """
         You are an SUMMARY EXPERT .
-            create a breif summary explaining the topics given in {text} and write it in very basic terms to anyone can understand it.
-
+           you generate summary given by the user.
 """
 
 TITLE_PROMPT = """
@@ -13,4 +12,11 @@ TITLE_PROMPT = """
         - give the title within the range from 5-7 words
         - make this title more professional and related to content within the post.
         - if it's too large around 10 words then bring it to 7 words
+        
+    STRICT OUTPUT RULES:
+        - Output ONLY the final title
+        - No explanations
+        - No prefixes like "Title:"
+        - No quotes
+        - Single line only
 """

@@ -1,14 +1,20 @@
+from agentschema.stateschema import State
+from dotenv import load_dotenv
+load_dotenv()
+from typing import Optional
 from models.generativemodel import groqmodel
 from utils.prompts import TITLE_PROMPT
-from langchain_core.tools import  tool
+from langchain.tools import  tool,ToolRuntime
+from langchain.messages import ToolMessage
+from langgraph.types import Command
 postdata= "demo"
 posttitle ="demo"
 
 
 @tool
-def title_tool():
+def title_tool(posttitle:str,postdata:str,runtime:ToolRuntime):
     """
-    name :titile_tool
+    name :title_tool
     work : generates title from the given data, or the existing title.
     
     - if no title is given then generate the title around 5 words
@@ -20,7 +26,6 @@ def title_tool():
 
     after doing all the process return only new title in string format.without anything extra.
     """
-    final_prompt = TITLE_PROMPT.format(postdata = postdata,posttitle =posttitle )
+    final_prompt = TITLE_PROMPT.format(postdata = postdata,posttitle=posttitle )
     response = groqmodel.invoke(final_prompt)
-    print(response.content.strip())
     return response.content.strip()
