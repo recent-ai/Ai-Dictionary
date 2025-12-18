@@ -10,7 +10,7 @@ from langgraph.types import Command
 
 
 @tool
-def title_tool(posttitle:str,postdata:str,runtime:ToolRuntime):
+def title_tool(posttitle:str,postdata:str):
     """
     name :title_tool
     work : generates title from the given data, or the existing title.
