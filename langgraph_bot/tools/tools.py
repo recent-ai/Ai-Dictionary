@@ -18,7 +18,7 @@ def title_tool(posttitle:str,postdata:str,runtime:ToolRuntime):
     work : generates title from the given data, or the existing title.
     
     - if no title is given then generate the title around 5 words
-    - if the lenght of  the original title exceeds 8 words and doesn't contain minimum 4 words.
+    - if the length of  the original title exceeds 8 words or doesn't contain minimum 4 words.
     -      for large title more than 8
     -        make it to nearly 8 or 7 with professional flow
     -      for small title less than 4 
