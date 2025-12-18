@@ -62,7 +62,7 @@ def get_post_content_by_id(post_id:str):
     :type post_id: str
     """
     try:
-        post_content = supabase.table("post_content").select("*,post_content(content)").eq("post_id", post_id).execute()
+        post_content = supabase.table("post_content").select("*").eq("post_id", post_id).execute()
         
         if post_content.error:
             raise Exception(f"Error fetching post content by id: {post_content.error.message}")
@@ -81,9 +81,21 @@ def user_liked_post(user_id:str, post_id:str):
     :param post_id: Description
     :type post_id: str
     """
+    
+    # Todo : Need to add Primary key constraint on (userid, likedpostid) in supabase table to avoid duplicate likes
     try:
-        res = supabase.table("user_liked_posts").insert({"userid":user_id, "likedpostid":post_id}).execute()
+        res = supabase.table("user_liked_posts").insert({
+            "userid": user_id, 
+            "likedpostid": post_id
+        }).execute()
+        
+        if res.error:
+            # Check if it's a duplicate key constraint violation
+            if "duplicate" in str(res.error).lower() or "unique constraint" in str(res.error).lower():
+                return False  # Already liked
+            raise Exception(f"Error recording like: {res.error.message}")
+        
+        return True
     
     except Exception as e:
-        raise Exception(f"Exception in user_liked_post: {str(e)}")
-    
+        raise Exception(f"Exception in user_liked_post: {str(e)}") from e
