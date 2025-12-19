@@ -1,6 +1,6 @@
 from agents.summaryagent import *
 from agentschema.stateschema import State
-from langchain_core.messages import BaseMessage,HumanMessage
+from langchain_core.messages import BaseMessage,HumanMessage,AIMessage
 
 
 def summary_agent_node(state:State):
@@ -13,13 +13,25 @@ def summary_agent_node(state:State):
     Keep it professional and easy to understand, cover main important topics to understand it.
     Only give the summary in the response nothing else.
     """
-
     response =  agent.invoke({"messages":[HumanMessage(content=last_message)]})
-
-
 
     # If agent returns dict with messages then extract them
     if isinstance(response, dict) and "messages" in response:
         summary = response["messages"][-1].content
         return {"messages": response["messages"],"summary":summary}
     return {"messages":[response],"summary":summary}
+
+def description_agent_node(state:State):
+    last_message = f""""""
+
+    response = description_agent.invoke({"messages":[HumanMessage(content=last_message)]})
+
+    try:
+        if response: 
+            description = response['messages'][-1].content
+            return {"messages":response["messages"],"description":description,"description_agent_success":True}
+    except Exception as e:
+        return {"messages":[AIMessage(content=f"the agent can not perform this action due to errro {e}")],"description_agent_success":False}
+
+
+

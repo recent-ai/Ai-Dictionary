@@ -1,6 +1,6 @@
+from dotenv import load_dotenv
 load_dotenv()
 from agentschema.stateschema import State
-from dotenv import load_dotenv
 from typing import Optional
 from models.generativemodel import groqmodel
 from utils.prompts import TITLE_PROMPT
