@@ -1,4 +1,5 @@
 import os
+import logging
 
 import uvicorn
 from dotenv import load_dotenv
@@ -7,6 +8,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from services.authentication.auth import lifespan
 from services.authentication.auth import router as auth_router
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=(
+        "%(asctime)s | %(levelname)s | %(name)s | %(message)s | %(filename)s:%(lineno)d"
+    ),
+)
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
