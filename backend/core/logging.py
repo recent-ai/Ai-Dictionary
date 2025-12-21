@@ -1,7 +1,5 @@
 import logging
 
-logger = logging.getLogger('main_log')
+logger = logging.getLogger("main_log")
 
-logging.basicConfig(
-    logger
-)
+logging.basicConfig(logger)
