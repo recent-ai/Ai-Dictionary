@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from ph_wrapper import ProductHuntWrapper
+from .ph_wrapper import ProductHuntWrapper
 
 # Testing Product Hunt Wrapper Functions
 # Ensure you have set the environment variable "product_hunt_access_token" with your
@@ -15,6 +15,11 @@ from ph_wrapper import ProductHuntWrapper
 load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
 
 access_token = os.getenv("product_hunt_access_token")
+if not access_token:
+    raise ValueError(
+        "Environment variable 'product_hunt_access_token' is not set. "
+        "Please create a .env file in the backend/ directory with your token."
+    )
 ph = ProductHuntWrapper(access_token)
 
 
