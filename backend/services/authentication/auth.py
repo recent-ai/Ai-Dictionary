@@ -1,10 +1,14 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI,APIRouter
+from fastapi import APIRouter, Depends, FastAPI
 
 from services.authentication.dbs import User, create_db_and_tables
 from services.authentication.schema import UserCreate, UserRead, UserUpdate
-from services.authentication.users import auth_backend, current_active_user, fastapi_users
+from services.authentication.users import (
+    auth_backend,
+    current_active_user,
+    fastapi_users,
+)
 
 
 @asynccontextmanager
@@ -45,5 +49,5 @@ router.include_router(
 
 
 @router.get("/authenticated-route")
-async def authenticated_route(user: User = Depends(current_active_user)):
+async def authenticated_route(user: User = Depends(current_active_user)):  # noqa: B008 for now
     return {"message": f"Hello {user.email}!"}

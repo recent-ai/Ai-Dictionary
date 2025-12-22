@@ -1,1 +1,2 @@
-# add configs related to users , environmental variables configuration and other necessary configuration .
+# add configs related to users , environmental variables configuration
+# and other necessary configuration .

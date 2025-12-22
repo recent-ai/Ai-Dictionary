@@ -1,5 +1,7 @@
 import os
-from supabase import create_client, Client
+
+from supabase import Client, create_client
+
 # Initialization of Supabase client goes here
 url: str = os.environ.get("SUPABASE_URL")
 if not url:

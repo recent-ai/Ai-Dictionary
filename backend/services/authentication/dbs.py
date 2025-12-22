@@ -1,14 +1,18 @@
+import os
 from collections.abc import AsyncGenerator
+
+from dotenv import load_dotenv
 from fastapi import Depends
-from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
-from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
+from fastapi_users_db_sqlalchemy import (
+    SQLAlchemyBaseUserTableUUID,
+    SQLAlchemyUserDatabase,
+)
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
-from dotenv import load_dotenv
-import os
+
 load_dotenv()
 
-DB_PASSWORD = os.environ.get('DB_PASSWORD')
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
 DATABASE_URL = f"postgresql+asyncpg://postgres:{DB_PASSWORD}@localhost:5432/postgres"
 
 
@@ -34,5 +38,5 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-async def get_user_db(session: AsyncSession = Depends(get_async_session)):
+async def get_user_db(session: AsyncSession = Depends(get_async_session)):  # noqa: B008
     yield SQLAlchemyUserDatabase(session, User)
