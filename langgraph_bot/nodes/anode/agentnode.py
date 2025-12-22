@@ -1,4 +1,4 @@
-from agents.summaryagent import *
+from agents.description_agent import agent
 from agentschema.stateschema import State
 from langchain_core.messages import BaseMessage,HumanMessage,AIMessage
 
@@ -24,7 +24,7 @@ def summary_agent_node(state:State):
 def description_agent_node(state:State):
     last_message = f""""""
 
-    response = description_agent.invoke({"messages":[HumanMessage(content=last_message)]})
+    response = agent.invoke({"messages":[HumanMessage(content=last_message)]})
 
     try:
         if response: 
