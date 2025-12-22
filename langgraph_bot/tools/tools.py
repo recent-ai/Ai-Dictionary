@@ -65,9 +65,8 @@ def arxiv_tool():
 def scraper_tool():
     """
     NAME : SCAPER_TOOL
-    WORK : It is used to scarp from the web. 
+    WORK : It is used to scarp from the web.
            it scrapes data from the websites like W3Schools,medium,geeksforgeeks blogs,producthunt blogs,deepmind blogs,openai blogs,antropic blogs,TechCrunch etc.
            you scrap the data build the knowledge fully by reading from it and generate meaningfull technical understadable blog/post.
     """
-
     pass

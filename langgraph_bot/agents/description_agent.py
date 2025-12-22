@@ -17,22 +17,5 @@ agent = create_agent(
         tools=[arxiv_tool,tavily_tool,pdfreader_tool,scraper_tool]
 )
 
-# query = "tell me about LSTMs"
-# def run_stream(query):
-#     stream = agent.stream(
-#         {
-#             "messages": [
-#                 {"role": "user", "content": query}
-#             ]
-#         }
-#     )
 
-#     for chunk in stream:
-#         print()
-#         print(chunk)
-#         print()
-
-
-# if __name__ == "__main__":
-#     pp(run_stream(query))
     
