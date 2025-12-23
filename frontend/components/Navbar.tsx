@@ -18,8 +18,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, loading, logoutAction } = useAuth();
   const pathname = usePathname();
-  const isAuthPage =
-    pathname.startsWith("/login") || pathname.startsWith("/signup");
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
   if (isAuthPage) {
     return null;
   }
