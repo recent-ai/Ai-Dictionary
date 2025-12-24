@@ -5,7 +5,7 @@ from typing import Optional
 from models.generativemodel import groqmodel
 from langchain.tools import  tool,ToolRuntime
 from langchain.messages import ToolMessage
-from langchain_community.document_loaders import ArxivLoader,UnstructuredPDFLoader
+from langchain_community.document_loaders import ArxivLoader,UnstructuredPDFLoader,FireCrawlLoader
 from langchain_tavily import TavilySearch
 from langgraph.types import Command
 import requests
@@ -107,14 +107,20 @@ def arxiv_tool(query:str)->List[Dict]:
     return papers
 
 @tool
-def scraper_tool():   # for static html rich content scrapping or page loading. 
+def scraper_tool(url)-> List:   # for static html rich content scrapping or page loading. 
     """
     NAME : SCAPER_TOOL
     WORK : It is used to scarp from the web.
            it scrapes data from the websites like W3Schools,medium,geeksforgeeks blogs,producthunt blogs,deepmind blogs,openai blogs,antropic blogs,TechCrunch etc.
            you scrap the data build the knowledge fully by reading from it and generate meaningfull technical understadable blog/post.
     """
-    pass
+    loader = FireCrawlLoader(
+     url="https://techcrunch.com/latest/", mode="crawl")
+    pages = []
+    for doc in loader.lazy_load():
+        pages.append(doc)
+
+    return pages
 
 
 
