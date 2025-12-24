@@ -22,6 +22,14 @@ interface AuthContextType {
 // Creating Auth Context
 const AuthContext = createContext<AuthContextType | null>(null);
 
+/**
+ * Provides authentication state and actions to descendant components.
+ *
+ * Restores the current user on mount, and exposes `user`, `loading`,
+ * `loginAction`, `logoutAction`, and `registerAction` through context.
+ *
+ * @returns A React context provider element that supplies authentication state and actions to its children
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,6 +95,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Access the authentication context provided by AuthProvider.
+ *
+ * @returns The current authentication context with `user`, `loading`, `loginAction`, `logoutAction`, and `registerAction`.
+ * @throws Error if called outside of an AuthProvider.
+ */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {

@@ -1,3 +1,8 @@
+/**
+ * Renders the About page with a full-viewport dark gradient background.
+ *
+ * @returns A React fragment containing a top-level div with classes `main` and `background` and an absolutely positioned, full-bleed gradient background element.
+ */
 export default function aboutPage(){
     return(
         <>
@@ -8,4 +13,3 @@ export default function aboutPage(){
         </>
     )
 }
-

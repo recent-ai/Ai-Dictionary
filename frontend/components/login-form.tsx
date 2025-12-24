@@ -22,6 +22,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "./auth/AuthContext";
 
+/**
+ * Render a login card with social sign-in buttons, email and password fields, and a submit action.
+ *
+ * The form invokes the app's authentication flow when submitted and navigates to the root path on successful login.
+ *
+ * @returns The JSX element for the login UI
+ */
 export function LoginForm({
   className,
   ...props
