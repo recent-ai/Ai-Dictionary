@@ -25,6 +25,9 @@ export interface RegisterResponse {
  * @param payload - Object containing `username` and `password` to submit for authentication
  * @returns `true` if authentication succeeded
  * @throws Error when the server responds with a non-ok status (the error message will prefer the server-provided `detail` when available) or when a network/error occurs
+ *  * Note: fastapi-users with cookie-based authentication does not return any content in the response body.
+ * Instead, it returns a 204 No Content status and sets the authentication cookie via the `Set-Cookie` header,
+ * which is automatically handled by the browser when `credentials: "include"` is specified.
  */
 export async function loginUser(payload: LoginPayload): Promise<boolean> {
     try {

@@ -19,7 +19,7 @@ import { usePathname } from "next/navigation";
  *
  * Renders navigation links (Blog, About, Search), a theme toggle, and either a Login button or the
  * authenticated user's email with a Logout button. On small screens the navigation collapses into a
- * toggleable mobile menu. The component returns nothing when the current route is `/login` or `/signup`.
+ * toggleable mobile menu. Uses conditional rendering to hide the NavBar on authentication pages.
  *
  * @returns The navigation bar JSX element, or `null` when the current route is `/login` or `/signup`.
  */
