@@ -327,6 +327,12 @@ interface PageProps{
     slug:string;
   }>;
 }
+/**
+ * Render the blog post page for a given route slug.
+ *
+ * @param params - Promise resolving to an object containing the route `slug`
+ * @returns A React element that renders the post content for the specified `slug`, or a centered "404 - Blog Post Not Found" message when no post is found
+ */
 export default async function BlogPostPage({ params }: PageProps) {
   const {slug} = await params;
   const MOCK_DATA = BLOG_DATABASE[slug] || [];

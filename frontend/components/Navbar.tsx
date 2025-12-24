@@ -14,6 +14,15 @@ import { useState } from "react";
 import { useAuth } from "./auth/AuthContext";
 import { usePathname } from "next/navigation";
 
+/**
+ * Top navigation bar that displays site navigation, theme toggle, and user authentication controls.
+ *
+ * Renders navigation links (Blog, About, Search), a theme toggle, and either a Login button or the
+ * authenticated user's email with a Logout button. On small screens the navigation collapses into a
+ * toggleable mobile menu. The component returns nothing when the current route is `/login` or `/signup`.
+ *
+ * @returns The navigation bar JSX element, or `null` when the current route is `/login` or `/signup`.
+ */
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, loading, logoutAction } = useAuth();

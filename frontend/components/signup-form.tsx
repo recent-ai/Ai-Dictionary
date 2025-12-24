@@ -20,6 +20,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAuth } from "./auth/AuthContext";
 
+/**
+ * Renders a signup form UI that registers a new user and navigates to the home page on success.
+ *
+ * The form collects name, email, password and confirm-password fields, uses the app authentication
+ * context to perform registration, and on successful signup redirects to "/". On registration failure
+ * it sets a local error message and logs the failure (UI notification is not provided here).
+ *
+ * @param props - Standard div element props; `className` may be provided to style the outer container.
+ * @returns A JSX element containing the signup form and related descriptions/links.
+ */
 export function SignupForm({
   className,
   ...props

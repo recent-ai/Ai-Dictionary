@@ -6,6 +6,14 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+/**
+ * Render the login page and redirect authenticated users to the homepage.
+ *
+ * If authentication is still loading, renders nothing. When a user is authenticated,
+ * performs a client-side navigation to "/"; otherwise displays the login UI.
+ *
+ * @returns The login page JSX element; `null` while authentication is loading.
+ */
 export default function LoginPage() {
   const { user, loading } = useAuth();
 

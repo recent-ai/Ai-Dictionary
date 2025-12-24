@@ -19,6 +19,13 @@ export interface RegisterResponse {
 }
 
 
+/**
+ * Attempt to authenticate a user using a cookie-based session by POSTing form-encoded credentials.
+ *
+ * @param payload - Object containing `username` and `password` to submit for authentication
+ * @returns `true` if authentication succeeded
+ * @throws Error when the server responds with a non-ok status (the error message will prefer the server-provided `detail` when available) or when a network/error occurs
+ */
 export async function loginUser(payload: LoginPayload): Promise<boolean> {
     try {
         const formData = new URLSearchParams();
@@ -43,7 +50,13 @@ export async function loginUser(payload: LoginPayload): Promise<boolean> {
     }
 }
 
-// change in the production #prod.
+/**
+ * Create a new user account using the provided registration data.
+ *
+ * @param payload - Registration fields (expected: `email` and `password`)
+ * @returns The created user's data: `id`, `email`, `is_active`, `is_verified`, and `is_superuser`
+ * @throws Error if the registration request fails; message contains server `detail` when available
+ */
 
 export async function handleSignup(payload: RegisterPayload): Promise<RegisterResponse> {
 
@@ -64,6 +77,12 @@ export async function handleSignup(payload: RegisterPayload): Promise<RegisterRe
     return data as RegisterResponse;
 }
 
+/**
+ * Retrieves the currently authenticated user's profile from the API.
+ *
+ * @returns The parsed JSON object representing the current user.
+ * @throws Error when the request fails; the error message is the server's `detail` field when available.
+ */
 export async function getCurrentUser() {
     const response = await fetch(`${API_URL}/users/me`, {
         method: "GET",
@@ -80,6 +99,12 @@ export async function getCurrentUser() {
     return await response.json();
 }
 
+/**
+ * Logs out the current user by calling the API's cookie-based logout endpoint.
+ *
+ * @throws Error when the server responds with a non-ok status — the error message is the server's `detail` field if present, otherwise "Logout failed".
+ * @throws Error rethrowing underlying network or unexpected errors encountered while performing the request.
+ */
 export async function logoutUser() {
     try {
         const response = await fetch(`${API_URL}/auth/cookie/logout`, {
