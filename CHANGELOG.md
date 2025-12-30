@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### December 30, 2025
+
+#### Changed - PR #59: Update Next.js to 16.0.10
+
+- **Dependencies:**
+  - Updated Next.js from 16.0.7 to 16.0.10 in frontend package
+
 ### December 24, 2025
 
 #### Added - PR #57: Add docstrings to `auth/frontend`
