@@ -4,7 +4,7 @@ This module provides manual tests for the Product Hunt API wrapper to verify
 fetching of top products by different topics.
 
 Environment Setup:
-    Requires PRODUCT_HUNT_ACCESS_TOKEN environment variable set in a .env file
+    Requires product_hunt_access_token environment variable set in a .env file
     located in the backend/ directory. Generate tokens at:
     https://www.producthunt.com/v2/oauth/applications
 
@@ -12,8 +12,8 @@ Environment Setup:
         product_hunt_access_token="YOUR_ACCESS_TOKEN_HERE"
 
 Usage:
-    Run from repository root:
-        uv run backend/services/product_hunt_wrapper/test_ph_wrapper.py
+    Run as a module from repository root:
+        python -m backend.services.product_hunt_wrapper.test_ph_wrapper
 
 Testing Approach:
     Uses manual verification through console output instead of automated assertions.

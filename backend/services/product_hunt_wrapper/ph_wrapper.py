@@ -31,7 +31,8 @@ def date_check():
     """Return yesterday's date in ISO 8601 format.
 
     Returns:
-        str: Yesterday's date formatted as 'YYYY-MM-DDTHH:MM:SSZ' in UTC timezone.
+        str: Yesterday's date at midnight (00:00:00) in UTC, formatted as
+            'YYYY-MM-DDTHH:MM:SSZ'.
     """
     date_yesterday = datetime.now(UTC) - timedelta(days=1)
     format_date_yesterday = date_yesterday.strftime("%Y-%m-%dT00:00:00Z")
