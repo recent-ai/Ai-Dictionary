@@ -22,7 +22,7 @@ def summary_agent_node(state:State):
     return {"messages":[response],"summary":summary}
 
 def description_agent_node(state:State):
-    last_message = f"""{state['messages'][-1].content} + here is the topic + {state['topic']} + and here  is the data :{state['data']} + here is the title for the post: {state['title']}"""
+    last_message = f"""here is the topic + {state['topic']} + and here  is the data :{state['data']} + here is the title for the post: {state['title']}"""
 
     response = agent.invoke({"messages":[HumanMessage(content=last_message)]})
 

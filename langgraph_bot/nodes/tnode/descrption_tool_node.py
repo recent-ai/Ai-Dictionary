@@ -7,12 +7,6 @@ def arxiv_node(state: State):
 
     return {
         "arxiv_urls": papers,   # directly into state
-        "messages": [
-            ToolMessage(
-                tool_name="ARXIV_TOOL",
-                content=str(papers)
-            )
-        ]
     }
 
 

@@ -26,6 +26,14 @@ DESCRIPTION_PROMPT = """
         then you need to understand it and write content for the post. Your main work will be to descriptively explain the concept of the context data you are given.
         make the most easy to read and understand. you have to explain in the technical terms also. 
 
+        Follow this flow :
+         1.Gather data    
+         2.Use your tools for gathering data
+         3.use the data for the description generation
+        
+        Here are the data field where data is available.
+        state['data'],state['document'],state['tavily_result']
+
         You will have these tools for your understanding if you don't know any term or you having new term.
         - PDFREADER TOOL
         - READ ARXIV TOOL 

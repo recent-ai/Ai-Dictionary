@@ -20,8 +20,8 @@ aimodel=ChatOpenAI(
     rate_limiter=limiter
 )
 groqmodel = ChatGroq(
-    model="qwen/qwen3-32b",
+    model="meta-llama/llama-4-scout-17b-16e-instruct", #"qwen/qwen3-32b",
     temperature=0.7,
-    reasoning_format="parsed",
+    # reasoning_format="parsed",
     max_retries=2,
 )
