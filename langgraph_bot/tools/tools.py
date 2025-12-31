@@ -12,6 +12,8 @@ import requests
 import tempfile
 from typing import List,Dict
 from utils.prompts import TITLE_PROMPT
+import subprocess
+import os
 
 
 ## SUMMMARY AGENT TOOLS
@@ -124,3 +126,40 @@ def scraper_tool(url)-> List:   # for static html rich content scrapping or page
 
 
 
+#CODING AGENT TOOLS
+@tool
+def python_executor(code: str) -> dict:
+    """
+    Securely execute Python code and return structured output.
+    """
+    with tempfile.NamedTemporaryFile(
+        suffix=".py", mode="w", delete=False
+    ) as f:
+        f.write(code)
+        file_path = f.name
+
+    try:
+        process = subprocess.run(
+            ["python", file_path],
+            capture_output=True,
+            text=True,
+            timeout=8
+        )
+
+        return {
+            "success": process.returncode == 0,
+            "stdout": process.stdout.strip(),
+            "stderr": process.stderr.strip(),
+            "exit_code": process.returncode
+        }
+
+    except subprocess.TimeoutExpired:
+        return {
+            "success": False,
+            "stdout": "",
+            "stderr": "Execution timed out",
+            "exit_code": -1
+        }
+
+    finally:
+        os.remove(file_path)

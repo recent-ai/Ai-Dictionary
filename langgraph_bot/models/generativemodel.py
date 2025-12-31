@@ -25,3 +25,9 @@ groqmodel = ChatGroq(
     # reasoning_format="parsed",
     max_retries=2,
 )
+codemodel = ChatGroq(
+     model="qwen/qwen3-32b",
+    temperature=0.7,
+    reasoning_format="parsed",
+    max_retries=3,
+)
