@@ -17,7 +17,6 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { loginUser } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "./auth/AuthContext";

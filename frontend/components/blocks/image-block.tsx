@@ -2,6 +2,7 @@
 
 import { ImageBlock } from "@/types/content";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 type Props = ImageBlock["data"];
 
@@ -16,7 +17,7 @@ export function ImageComponent({ alt, caption, url }: Props) {
       <div className="w-full h-56 bg-secondary/50 rounded-lg flex items-center justify-center border border-dashed border-muted-foreground/30 relative group overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/5 mask-[linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
         <span className="text-muted-foreground relative z-10 group-hover:scale-105 transition-transform duration-300">
-          <img src={url} alt={alt} className="max-h-full max-w-full object-contain" />
+          <Image src={url} alt={alt || ""} className="max-h-full max-w-full object-contain" fill />
         </span>
       </div>
       <div className="text-sm text-muted-foreground text-left w-full px-4">

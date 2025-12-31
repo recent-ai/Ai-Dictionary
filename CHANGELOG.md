@@ -8,6 +8,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### December 31, 2025
+
+#### Fixed - Frontend ESLint Setup and Code Quality Improvements
+
+- **Linting Configuration:**
+  - Fixed ESLint configuration for Next.js project
+  - Resolved React JSX-in-try-catch error in code-block component
+  - Fixed unescaped HTML entities in text content (apostrophes)
+
+- **Next.js Image Optimization:**
+  - Migrated from `<img>` tags to Next.js `<Image>` component for better optimization
+  - Added Giphy domain to `remotePatterns` in `next.config.ts` for external GIF support
+  - Fixed Image component props (width, height, unoptimized) for proper rendering
+
+- **Code Refactoring:**
+  - Removed unused imports across multiple components
+  - Cleaned up BLOG_DATABASE mock data from blog page (moved to empty state)
+  - Removed redundant console.log statements
+  - Fixed type casting issues in API error handling
+
+- **404 Page Enhancement:**
+  - Changed Link component to native anchor tag for proper full-page reload from error state
+  - Improved navigation behavior when returning from 404 page
+
+- **Type Safety:**
+  - Added proper null checks for image alt text
+  - Fixed missing content field in DiagramBlock type definition
+
 ### December 30, 2025
 
 #### Changed - PR #59: Update Next.js to 16.0.10
