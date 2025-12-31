@@ -1,6 +1,7 @@
 import { Manrope } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 import './globals.css'
 
 const manrope = Manrope({
@@ -27,9 +28,10 @@ export default function GlobalNotFound() {
             
             <div className="relative w-[80%] aspect-square md:aspect-auto md:h-[500px] max-w-md md:max-w-full rounded-2xl overflow-hidden border-2 border-border shadow-2xl bg-muted group order-2 md:order-1">
               <div className="absolute inset-0 bg-linear-to-tr from-background/20 to-transparent z-10 pointer-events-none" />
-              <img 
+              <Image 
                 src="/cat_2.png" 
                 alt="AI Hallucination Meme"
+                fill
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 grayscale group-hover:grayscale-0"
               />
               <div className="absolute bottom-4 left-4 right-4 bg-black/80 p-3 rounded-lg text-sm font-mono text-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none text-left">

@@ -2,7 +2,6 @@
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { handleSignup } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,

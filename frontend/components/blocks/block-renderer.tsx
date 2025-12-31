@@ -8,6 +8,7 @@ import React from "react";
 import { RelatedTopicsComponent } from "./related-topics-block";
 import { SummaryComponent } from "./summary-block";
 import { TitleComponent } from "./header-block";
+import Image from "next/image";
 
 //Registry
 const BLOCK_REGISTRY: Record<string, React.FC<any>> = {
@@ -28,7 +29,6 @@ interface BlockRendererProps {
 
 export function BlockRenderer({ blocks }: BlockRendererProps) {
   // Check if block is present or not
-  console.log(blocks);
   if (!blocks || blocks.length === 0) {
     return (
       <main className="min-h-screen flex items-center justify-center">
@@ -37,10 +37,12 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
             No content available right now. Check back soon😓!
           </h1>
           <h2 className="text-xl">Working on it</h2>
-          <img
+          <Image
             src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZTB4ZDVvcWllaTl5czV5Zzh2azg5aDAyeTQxaWc3a2xjN3Bzb3NkciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JIX9t2j0ZTN9S/giphy.gif"
-            alt="Catworking"
-            className="h-75 w-100 items-center mx-auto"
+            alt="Cat working"
+            className="mx-auto"
+            width={400}
+            height={400}
           />
         </div>
       </main>

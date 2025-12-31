@@ -343,14 +343,6 @@ export default async function BlogPostPage({ params }: PageProps) {
   const {slug} = await params;
   const MOCK_DATA = BLOG_DATABASE[slug] || [];
   // If no data found for slug, you might want to handle 404 here
-  if(MOCK_DATA.length === 0){
-    //TODO : Need to implement 404 page
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <h1 className="text-2xl font-semibold">404 - Blog Post Not Found</h1>
-      </div>
-    );
-  }
 
   //Extracting title block for breadcrumbs 
   const titleBlock = MOCK_DATA.find((b) => b.type === "title");

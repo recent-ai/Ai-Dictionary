@@ -1,12 +1,8 @@
 "use client";
-
-import { ExampleBlock } from "@/types/content";
 import { motion } from "framer-motion";
 import { Bookmark } from "lucide-react";
 
-type Props = ExampleBlock["data"];
-
-export function ExampleComponent({ content }: Props) {
+export function ExampleComponent() {
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}

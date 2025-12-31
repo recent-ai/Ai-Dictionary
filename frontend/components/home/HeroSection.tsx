@@ -30,7 +30,7 @@ export function HeroSection() {
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-backwards">
             Curated, automated, and essential. We parse thousands of AI news
-            sources daily so you don't have to.
+            sources daily so you don&apos;t have to.
           </p>
 
           <div className="flex flex-wrap justify-center gap-3 pt-4 animate-in fade-in slide-in-from-bottom-10 duration-500 delay-300 fill-mode-backwards">
@@ -38,7 +38,7 @@ export function HeroSection() {
               size="lg"
               className="h-12 px-6 text-base rounded-full group bg-foreground text-background hover:bg-foreground/90"
             >
-              Read Today's Brief
+              Read Today&apos;s Brief
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button

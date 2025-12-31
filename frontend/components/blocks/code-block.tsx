@@ -14,21 +14,19 @@ function escapeHtml(str: string): string {
 }
 
 export async function CodeComponent({ content, language, filename }: Props) {
+  let html: string;
+  
   try {
-    const html = await codeToHtml(content, {
+    html = await codeToHtml(content, {
       lang: language || "text",
       theme: "one-dark-pro",
     });
-    return <CodeBlockClient html={html} filename={filename} />;
   } catch (e) {
     console.error("Error generating code block HTML:", e);
     const escapedContent = escapeHtml(content);
     // Very rare case when shiki fails, fallback to escaped content
-    return (
-      <CodeBlockClient
-        html={`<pre><code>${escapedContent}</code></pre>`}
-        filename={filename}
-      />
-    );
+    html = `<pre><code>${escapedContent}</code></pre>`;
   }
+  
+  return <CodeBlockClient html={html} filename={filename} />;
 }

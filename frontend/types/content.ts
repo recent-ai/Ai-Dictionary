@@ -53,6 +53,8 @@ export interface ImageBlock extends Block {
 export interface DiagramBlock extends Block {
     type: 'diagram',
     data: {
+        // Define diagram-specific fields here
+        content: string
         //TODO : I dont know for now, Will update later
     }
 }

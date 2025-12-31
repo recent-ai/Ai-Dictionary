@@ -120,7 +120,7 @@ export async function logoutUser() {
 
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
-            throw new Error((data as any).detail || "Logout failed");
+            throw new Error(data.detail || "Logout failed");
         }
     } catch (error) {
         console.error("Error occurred while logoutUser", error);
