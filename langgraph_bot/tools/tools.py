@@ -116,9 +116,7 @@ def scraper_tool(url)-> List:   # for static html rich content scrapping or page
            it scrapes data from the websites like W3Schools,medium,geeksforgeeks blogs,producthunt blogs,deepmind blogs,openai blogs,antropic blogs,TechCrunch etc.
            you scrap the data build the knowledge fully by reading from it and generate meaningfull technical understadable blog/post.
     """
-    if url:
-        url = url
-    else:
+    if not url:
         url = "https://techcrunch.com/latest/"
     loader = FireCrawlLoader(
      url=url, mode="crawl")
