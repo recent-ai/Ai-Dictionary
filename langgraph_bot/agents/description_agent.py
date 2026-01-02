@@ -13,13 +13,6 @@ from utils.prompts import DESCRIPTION_PROMPT
 agent = create_agent(
         model=groqmodel,
         state_schema=State,
-        system_prompt=DESCRIPTION_PROMPT,
-        tools=[arxiv_tool,tavily_search_tool,pdfreader_tool] #scraper_tool will be added soon for web scraping.
+        system_prompt=DESCRIPTION_PROMPT
+        # tools=[arxiv_tool,tavily_search_tool,pdfreader_tool] #scraper_tool will be added soon for web scraping.
 )
-
-
-
-# response = agent.invoke({"messages":"create a description for the LLM temporal collaps problem"})
-
-# for msg in response['messages']:
-#     print(msg.content)

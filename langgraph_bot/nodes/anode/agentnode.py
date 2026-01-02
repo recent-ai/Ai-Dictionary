@@ -9,9 +9,6 @@ def summary_agent_node(state:State):
     Here is the data to summarize = {state['data']} 
     Here is the default title = {state['title']}
     Here is the default topic = {state['topic']}
-    
-    Keep it professional and easy to understand, cover main important topics to understand it.
-    Only give the summary in the response nothing else.
     """
     response =  agent.invoke({"messages":[HumanMessage(content=last_message)]})
 
@@ -22,16 +19,20 @@ def summary_agent_node(state:State):
     return {"messages":[response],"summary":summary}
 
 def description_agent_node(state:State):
-    last_message = f"""here is the topic + {state['topic']} + and here  is the data :{state['data']} + here is the title for the post: {state['title']}"""
+    last_message = f"""
+     and here  is the data :{state['data']}
+     here is the search result from internet: {state['tavily_search_result']}
+     """
 
     response = agent.invoke({"messages":[HumanMessage(content=last_message)]})
 
     try:
-        if response: 
+        if response:
             description = response['messages'][-1].content
             return {"messages":response["messages"],"description":description,"description_agent_success":True}
     except Exception as e:
         return {"messages":[AIMessage(content=f"the agent can not perform this action due to errro {e}")],"description_agent_success":False}
+
 
 
 

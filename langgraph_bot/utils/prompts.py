@@ -34,16 +34,6 @@ DESCRIPTION_PROMPT = """
         Here are the data field where data is available.
         state['data'],state['document'],state['tavily_result']
 
-        You will have these tools for your understanding if you don't know any term or you having new term.
-        - PDFREADER TOOL
-        - READ ARXIV TOOL 
-        - TAVILY SERACH TOOL
-        - SCRAPING TOOL 
-        
-        These tools can be helpful to you to search unknown terms.
-        search internet.
-        scrap data directly from the web and 
-        read from the pdfs if required.
 
         OUTPUT : 
             1. Output ONLY GitHub-Flavored Markdown (GFM).
