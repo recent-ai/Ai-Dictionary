@@ -128,7 +128,7 @@ def scraper_tool(url)-> List:   # for static html rich content scrapping or page
 
 #CODING AGENT TOOLS
 @tool
-def python_executor(code: str) -> dict:
+def python_executor(code: str) -> Dict:
     """
     Securely execute Python code and return structured output.
     """
