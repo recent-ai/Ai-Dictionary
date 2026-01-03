@@ -12,13 +12,15 @@ def load_data(state:State):
 
     # FOR PRODUCTHUNT API ONLY.
     node = {
-        "id": "1042085",
-        "name": "Qoder JetBrains Plugin",
-        "tagline": "Understands your backend's real complexity, not just syntax",
-        "createdAt": "2025-11-28T08:01:00Z",
-        "votesCount": 382,
-        "description": "AI plugin for JetBrains that understands backend projects architecturally. Accesses Spring Bean graphs, database schemas, and framework semantics directly — not just superficial code. Provides context-aware suggestions for complex systems with 100K+ files.",
-        "reviewsCount": 6,
+        "id": "1044782",
+        "name": "8bitcn/ui",
+        "tagline": "8‑bit UI components that work in any framework",
+        "createdAt": "2025-12-05T08:01:00Z",
+        "votesCount": 403,
+        "description": "A set of retro-designed, accessible components and a code distribution platform. Open Source. Open Code.",
+        "reviewsCount": 1,
+        "slug": "8bitcn-ui",
+        "website": "https://www.producthunt.com/r/KMXWABRQLUE5JD?utm_campaign=producthunt-api&utm_medium=api-v2&utm_source=Application%3A+RecentAI+%28ID%3A+249620%29"
     }
 
     data= node['description']

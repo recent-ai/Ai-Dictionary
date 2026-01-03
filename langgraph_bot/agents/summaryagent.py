@@ -9,9 +9,10 @@ from tools.tools import title_tool
 
 
 
-agent = create_agent(
+s_agent = create_agent( # s refers to summary
         model=groqmodel,
         state_schema=State,
+        system_prompt=SUMMARY_PROMPT,
         tools=[title_tool]
 )
 
