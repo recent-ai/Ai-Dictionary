@@ -28,8 +28,9 @@ def description_agent_node(state:State):
 
     try:
         if response:
-            description = response['messages'][-1].content
-            return {"messages":response["messages"],"description":description,"description_agent_success":True}
+            if isinstance(response,dict) and "messages" in response:
+                description = response['messages'][-1].content
+                return {"messages":response["messages"],"description":description,"description_agent_success":True}
     except Exception as e:
         return {"messages":[AIMessage(content=f"the agent can not perform this action due to errro {e}")],"description_agent_success":False}
 
