@@ -93,7 +93,7 @@ def arxiv_tool(query:str)->List[Dict]:
             so the new person in ai domain can understand better.
     """
     loader = ArxivLoader(
-    query="reasoning",
+    query=query,
     doc_content_chars_max = None,
     sort_by = 'relevance',
     )
