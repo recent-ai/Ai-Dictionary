@@ -1,4 +1,5 @@
 from agents.description_agent import agent
+from agents.summaryagent import s_agent
 from agentschema.stateschema import State
 from langchain_core.messages import BaseMessage,HumanMessage,AIMessage
 
@@ -10,7 +11,7 @@ def summary_agent_node(state:State):
     Here is the default title = {state['title']}
     Here is the default topic = {state['topic']}
     """
-    response =  agent.invoke({"messages":[HumanMessage(content=last_message)]})
+    response =  s_agent.invoke({"messages":[HumanMessage(content=last_message)]})
 
     # If agent returns dict with messages then extract them
     if isinstance(response, dict) and "messages" in response:
