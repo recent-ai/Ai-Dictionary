@@ -17,6 +17,7 @@ def summary_agent_node(state:State):
     if isinstance(response, dict) and "messages" in response:
         summary = response["messages"][-1].content
         return {"messages": response["messages"],"summary":summary}
+    summary = response.content if hasattr(response, 'content') else str(response)
     return {"messages":[response],"summary":summary}
 
 def description_agent_node(state:State):
