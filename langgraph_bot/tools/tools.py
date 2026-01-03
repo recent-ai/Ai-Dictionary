@@ -82,43 +82,42 @@ tavily_search_tool = TavilySearch(
 #         all_docs.extend(docs)  
     
 #     return all_docs 
+@tool
+def pdfreader_tool(pdf_list: List[Dict]) -> List:
+    """
+    NAME : PDFREADER_TOOL
+    WORK : It is used to read from the pdfs. it loads the data from the pdfs and you can read from it for better understanding.
+           it will be mostly used to read some newly published articals or the existing ones from gathering necessory infromation for post generation.
+    """
+    all_docs = [] 
+    
+    for values in pdf_list:
+        pdf_url = values.get("pdf_url")
+        if not pdf_url:
+            continue
+        if "/abs/" in pdf_url:
+            pdf_url = pdf_url.replace("/abs/", "/pdf/") + ".pdf"
+        
+        pdf_path = None
+        try:
+            response = requests.get(pdf_url, timeout=30)
+            response.raise_for_status()
 
- @tool
- def pdfreader_tool(pdf_list: List[Dict]) -> List:
-     """
-     NAME : PDFREADER_TOOL
-     WORK : It is used to read from the pdfs. it loads the data from the pdfs and you can read from it for better understanding.
-            it will be mostly used to read some newly published articals or the existing ones from gathering necessory infromation for post generation.
-     """
-     all_docs = [] 
-     
-     for values in pdf_list:
-         pdf_url = values.get("pdf_url")
-         if not pdf_url:
-             continue
-         if "/abs/" in pdf_url:
-             pdf_url = pdf_url.replace("/abs/", "/pdf/") + ".pdf" 
-         pdf_path = None
-         try:
-             response = requests.get(pdf_url, timeout=30)
-             response.raise_for_status()
- 
-              with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as f:
-                 f.write(response.content)
-                 pdf_path = f.name
- 
-             loader = UnstructuredPDFLoader(pdf_path)
-             docs = loader.load()
-             all_docs.extend(docs)
-         except (requests.RequestException, Exception) as e:
-             # Log error or handle gracefully - skip this PDF and continue
-             pass
-         finally:
-             if pdf_path and os.path.exists(pdf_path):
-                 os.remove(pdf_path)
-     
-     return all_docs
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as f:
+                f.write(response.content)
+                pdf_path = f.name
 
+            loader = UnstructuredPDFLoader(pdf_path)
+            docs = loader.load()
+            all_docs.extend(docs)
+        except (requests.RequestException, Exception) as e:
+            # Log error or handle gracefully - skip this PDF and continue
+            pass
+        finally:
+            if pdf_path and os.path.exists(pdf_path):
+                os.remove(pdf_path)
+    
+    return all_docs
 @tool
 def arxiv_tool(query:str)->List[Dict]:
     """
