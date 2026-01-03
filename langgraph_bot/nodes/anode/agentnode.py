@@ -20,9 +20,13 @@ def summary_agent_node(state:State):
 
 def description_agent_node(state:State):
     last_message = f"""
-     and here  is the data :{state['data']}
-     here is the search result from internet: {state['tavily_search_result']}
-     """
+    Generate a comprehensive technical description using the following information:
+    
+    Data: {state['data']}
+    Search results from internet: {state['tavily_search_result']}
+    
+    Provide a detailed, well-structured description that combines insights from both sources.
+    """
 
     response = agent.invoke({"messages":[HumanMessage(content=last_message)]})
 
@@ -32,7 +36,7 @@ def description_agent_node(state:State):
                 description = response['messages'][-1].content
                 return {"messages":response["messages"],"description":description,"description_agent_success":True}
     except Exception as e:
-        return {"messages":[AIMessage(content=f"the agent can not perform this action due to errro {e}")],"description_agent_success":False}
+        return {"messages":[AIMessage(content=f"the agent can not perform this action due to error {e}")],"description_agent_success":False}
 
 
 
