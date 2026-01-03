@@ -64,6 +64,8 @@ def pdfreader_tool(list:List[Dict]):
            it will be mostly used to read some newly published articals or the existing ones from gathering necessory infromation for post generation.
 
     """
+    all_docs = [] 
+    
     for values in list:
         pdf_url = values.get("pdf_url")
         if "/abs/" in pdf_url:
@@ -77,9 +79,10 @@ def pdfreader_tool(list:List[Dict]):
 
         loader = UnstructuredPDFLoader(pdf_path)
         docs = loader.load()
-        return docs
-
-
+        all_docs.extend(docs)  
+    
+    return all_docs 
+    
 @tool
 def arxiv_tool(query:str)->List[Dict]:
     """
