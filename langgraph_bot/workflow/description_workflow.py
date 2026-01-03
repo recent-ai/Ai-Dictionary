@@ -19,11 +19,10 @@ desc.add_node("tavily_tool",tavily_node)
 
 desc.set_entry_point("load_data")
 desc.add_edge("load_data","arxiv_node")
-desc.add_edge("load_data","parser_tool")
+desc.add_edge("arxiv_node","parser_tool")
 desc.add_edge("load_data","tavily_tool")
 desc.add_edge("tavily_tool","description_agent")
 desc.add_edge("parser_tool","description_agent")
-desc.add_edge("arxiv_node","description_agent")
 desc.add_edge("description_agent",END)
 g = desc.compile()
 
