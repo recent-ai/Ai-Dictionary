@@ -3,7 +3,7 @@ from langchain_core.messages import HumanMessage
 from langgraph.graph import START,StateGraph,END
 from langgraph.prebuilt import ToolNode
 from nodes.anode.agentnode import description_agent_node
-from nodes.tnode.descrption_tool_node import arxiv_node,pdf_parsing_node,tavily_node
+from nodes.tnode.description_tool_node import arxiv_node,pdf_parsing_node,tavily_node
 from nodes.load_data_node import load_data
 from tools.tools import title_tool
 import pprint
