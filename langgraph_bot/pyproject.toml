@@ -5,7 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11.4"
 dependencies = [
-    "huggingface>=0.0.1",
     "huggingface-hub>=1.2.3",
     "langchain-core>=1.2.5",
     "langchain-google-genai>=4.1.2",
