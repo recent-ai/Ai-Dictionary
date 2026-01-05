@@ -29,7 +29,9 @@ def pdf_parsing_node(state:State):
 
     papers_to_read = papers[:4] #using top 4 pdfs only
 
-    docs = pdfreader_tool.invoke(papers_to_read)
+    docs = pdfreader_tool.invoke({
+    "pdf_list": papers_to_read
+})
 
     return {
         "documents": docs
