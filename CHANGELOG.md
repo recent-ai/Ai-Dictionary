@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Migrated from ESlint to Biome for frontend linting and formatting
 - Configured Biome with default rules
+- Configured and added `uv` for langgraph_bot with necessary dependencies and libraries
 
 #### Changed
 
