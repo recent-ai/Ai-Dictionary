@@ -26,7 +26,7 @@ import os
 
 from dotenv import load_dotenv
 
-from .ph_wrapper import ProductHuntWrapper
+from ph_wrapper import ProductHuntWrapper
 
 # Testing Product Hunt Wrapper Functions
 # Ensure you have set the environment variable "product_hunt_access_token" with your
@@ -50,7 +50,7 @@ ph = ProductHuntWrapper(access_token)
 
 def test1():
     """Test fetching AI products and print results to console."""
-    top_ai_products = ph.get_top_products_topic_ai()
+    top_ai_products = ph.get_top_products_by_topic("artificial-intelligence")
     print("Top AI Products:")
     for i in top_ai_products:
         print(i, "\n")
@@ -59,7 +59,7 @@ def test1():
 def test2():
     """Test fetching developer tools products and print results to console."""
     print("\n")
-    top_dev_tools_products = ph.get_top_products_topic_developer_tools()
+    top_dev_tools_products = ph.get_top_products_by_topic("developer-tools")
     print("Top Developer Tools Products:")
     for i in top_dev_tools_products:
         print(i, "\n")

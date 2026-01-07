@@ -98,38 +98,74 @@ class ProductHuntWrapper:
             )
         self.access_token = access_token
 
-    def get_top_products_topic_ai(self):
-        """Retrieve top 10 AI products from the previous day.
+    def get_top_products_by_topic(self, topic: str, limit: int = 10):
+        """Retrieve top products from the previous day filtered by topic.
 
-        Fetches featured products from the 'artificial-intelligence' topic,
+        Fetches featured products from the specified topic,
         ordered by votes count, posted within the previous day.
+
+        Args:
+            topic (str): The Product Hunt topic slug to filter by
+                (e.g., 'artificial-intelligence', 'developer-tools').
+            limit (int, optional): Maximum number of products to retrieve.
+                Defaults to 10.
 
         Returns:
             list: List of dictionaries containing product details including id, name,
                 tagline, createdAt, votesCount, description, reviewsCount, slug,
                 and website. Returns empty list if no products found.
+
+        Raises:
+            ValueError: If topic is None, not a string, or empty/whitespace only.
+
+        Example:
+            >>> wrapper = ProductHuntWrapper(access_token="your_token")
+            >>> # Get AI products
+            >>> ai_products = wrapper.get_top_products_by_topic
+            ("artificial-intelligence")
+            >>> # Get Developer Tools products
+            >>> dev_tools = wrapper.get_top_products_by_topic("developer-tools")
+            >>> # Get custom number of products
+            >>> products = wrapper.get_top_products_by_topic
+            ("developer-tools", limit=20)
         """
+        if not topic or not isinstance(topic, str) or not topic.strip():
+            raise ValueError("Topic is required and must be a non-empty string")
+
         date_yesterday = date_check()
         query = f"""
                 query {{ 
                     posts(
                         order: VOTES, 
                         featured: true, 
-                        first: 10, 
+                        first: {limit}, 
                         postedAfter: \"{date_yesterday}\", 
-                        topic: \"artificial-intelligence\"
+                        topic: \"{topic}\"
                     ) {{ 
                         edges {{ 
                             node {{ 
                                 id 
                                 name 
-                                tagline 
-                                createdAt 
-                                votesCount 
                                 description 
-                                reviewsCount 
                                 slug 
                                 website 
+                                tagline 
+                                createdAt
+                                url
+                                comments(first: 2) {{
+                                    nodes {{
+                                        id
+                                        body
+                                        createdAt
+                                        url
+                                        votesCount
+                                        user {{
+                                        id
+                                        name
+                                        username
+                                        }}
+                                    }}
+                                }}  
                             }} 
                         }} 
                     }} 
@@ -140,55 +176,5 @@ class ProductHuntWrapper:
         if items is None:
             print("No items found in the response.")
             return []
-        post_list = []
-        for e in items:
-            post_list.append(e.get("node", {}))
-        return post_list
 
-    def get_top_products_topic_developer_tools(self):
-        """Retrieve top 10 developer tools products from the previous day.
-
-        Fetches featured products from the 'developer-tools' topic,
-        ordered by votes count, posted within the previous day.
-
-        Returns:
-            list: List of dictionaries containing product details including id, name,
-                tagline, createdAt, votesCount, description, reviewsCount, slug,
-                and website. Returns empty list if no products found.
-        """
-        date_yesterday = date_check()
-        query = f"""
-                query {{ 
-                    posts(
-                        order: VOTES, 
-                        featured: true, 
-                        first: 10, 
-                        postedAfter: \"{date_yesterday}\", 
-                        topic: \"developer-tools\"
-                    ) {{ 
-                        edges {{ 
-                            node {{ 
-                                id 
-                                name 
-                                tagline 
-                                createdAt 
-                                votesCount 
-                                description 
-                                reviewsCount 
-                                slug 
-                                website 
-                            }} 
-                        }} 
-                    }} 
-                }}"""
-
-        response = url_call(query, self.access_token)
-
-        items = response.get("data", {}).get("posts", {}).get("edges", [])
-        if items is None:
-            print("No items found in the response.")
-            return []
-        post_list = []
-        for e in items:
-            post_list.append(e.get("node", {}))
-        return post_list
+        return [edge.get("node", {}) for edge in items]
