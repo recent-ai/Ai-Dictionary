@@ -80,7 +80,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		try {
 			console.log("registerAction called in AuthProvider");
 			await handleSignup({ email, password });
-			await loginAction(email, password); // Auto-login after successful registration
+			try {
+				await loginAction(email, password);
+			} catch (loginError) {
+				toast.error(
+					"Registration succeeded, but auto-login failed. Please log in manually.",
+				);
+				console.log("Auto-login failed after registration", loginError);
+				throw loginError;
+			}
 		} catch (error) {
 			toast.error(
 				error instanceof Error ? error.message : "Registration failed",

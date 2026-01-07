@@ -48,7 +48,6 @@ export function LoginForm({
 
 		try {
 			await loginAction(username, password);
-			console.log("Login Successful"); // For Debugging
 			router.push("/");
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "Login failed");
