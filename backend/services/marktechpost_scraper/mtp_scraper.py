@@ -14,8 +14,6 @@ firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
 
 
 class ScrapedData(BaseModel):
-    company_name: Optional[str] = None
-    company_description: Optional[str] = None
     source_name: Optional[str] = None
     url: Optional[str] = None
     slug: Optional[str] = None
@@ -29,14 +27,17 @@ def fetching_user_agents() -> list:
     try:
         user_agents = []
         url = "https://www.useragentlist.net/"
-        user_agent_res = requests.get(url=url)
+        user_agent_res = requests.get(url=url, timeout=10)
         # another soup instance for this
         user_agent_soup = BeautifulSoup(user_agent_res.text, "lxml")
         for agents in user_agent_soup.select("pre.wp-block-code"):
             user_agents.append(agents.text)
+        if not user_agents:
+            raise ValueError("No User Agent Found")
         return user_agents
-    except requests.exceptions.RequestsWarning as e:
-        print(f"Error in fetching USer Gate {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error in fetching User Gate {e}")
+        raise
 
 
 def fetch_blog_urls(url_mtp: str, user_agents: list) -> set:
@@ -44,16 +45,17 @@ def fetch_blog_urls(url_mtp: str, user_agents: list) -> set:
     try:
         for _headers in user_agents:
             header = {"User-Agent": f"{_headers}"}
-            response = requests.get(url=url_mtp, headers=header)
-            # check for connecttion_errors if any
+            response = requests.get(url=url_mtp, headers=header, timeout=10)
+            # check for connection_errors if any
             response.raise_for_status()
 
             soup = BeautifulSoup(response.content, "lxml")
             curr_year = date.today().strftime("%Y")
             curr_month = date.today().strftime("%m")
+            # Fetch blogs from last 4 days, excluding todays day
+            # because we have 1 day delay for extra leverage for safety
             for day in range(4, 0, -1):
                 curr_day = (date.today() - timedelta(day)).strftime("%d")
-                # print(curr_day, f"https://www.marktechpost.com/{curr_year}/{curr_month}/{curr_day}/[^/]+/$")
                 blogs = soup.find_all(
                     href=re.compile(
                         f"https://www.marktechpost.com/{curr_year}/{curr_month}/{curr_day}/[^/]+/$"
@@ -61,31 +63,34 @@ def fetch_blog_urls(url_mtp: str, user_agents: list) -> set:
                 )
                 for blog in blogs:
                     blog_links.add(blog["href"])
-            # for i in blog_links:
-            #     print(i, '\n')
-            # print(blog_links[1])
             if response.status_code == 200:
                 break
         return blog_links
     except requests.exceptions.RequestException as e:
         print(f"Error fetching the data from url {e}")
+        raise
 
 
 def fetch_tech_news_only(blog_links: set, user_agents: list) -> set:
     tutorial_links_set = set()
-    for url in blog_links:
-        header = {"User-Agent": f"{user_agents[0]}"}
-        blog_res = requests.get(url, headers=header)
-        blog_soup = BeautifulSoup(blog_res.text, "lxml")
-        block = blog_soup.find("div", class_="td-post-header")
-        target_link = block.find("a", string=re.compile(r"Tutorials"))
-        if target_link is not None:
-            tutorial_links_set.add(url)
-    return tutorial_links_set
+    try:
+        for url in blog_links:
+            if not user_agents:
+                raise Exception("User Agent Empty")
+            header = {"User-Agent": f"{user_agents[0]}"}
+            blog_res = requests.get(url, headers=header)
+            blog_soup = BeautifulSoup(blog_res.text, "lxml")
+            block = blog_soup.find("div", class_="td-post-header")
+            target_link = block.find("a", string=re.compile(r"Tutorials"))
+            if target_link is not None:
+                tutorial_links_set.add(url)
+        return tutorial_links_set
+    except requests.exceptions.RequestException as e:
+        print(f"Error filtering tutorials {e}")
 
 
 # Extract/ Scrape content using FireCrawl API
-def run_firecrawl_scrape(url) -> any:
+def run_firecrawl_scrape(url) -> str:
     try:
         app = Firecrawl(api_key=firecrawl_api_key)
         result = app.scrape(
@@ -109,5 +114,5 @@ def run_firecrawl_scrape(url) -> any:
         )
         return result.model_dump_json(include="json")
         # print(result.model_dump_json(include="json"))
-    except Exception as e:
-        print(e)
+    except requests.exceptions.RequestException as e:
+        print(f"Error in Scraping website {e}")

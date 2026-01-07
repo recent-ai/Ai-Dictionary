@@ -27,7 +27,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from dotenv import load_dotenv
 
-from .mtp_scraper import (
+from mtp_scraper import (
     fetching_user_agents,
     fetch_blog_urls,
     fetch_tech_news_only,
@@ -123,4 +123,4 @@ if __name__ == "__main__":
     # Test 2: Run full scraping pipeline
     # (commented out by default as it uses API credits)
     # Uncomment the line below to test the full pipeline
-    # test_full_scrape_pipeline()
+    test_full_scrape_pipeline()
