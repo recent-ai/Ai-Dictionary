@@ -24,6 +24,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - test_full_scrape_pipeline(): integration test for full pipeline (concurrent scraping; commented out by default to avoid API usage).
 - backend/pyproject.toml
   - Added dependencies: beautifulsoup4 >= 4.14.3, firecrawl >= 4.12.0, lxml >= 6.0.2, pre-commit >= 4.5.1.
+- Integrated Sonner toast notification system for user feedback across the frontend
+  - New Toaster component: frontend/components/ui/sonner.tsx — theme-aware wrapper around Sonner with custom icons (success, info, warning, error, loading) and CSS variable-based styling.
+  - Global Toaster rendered in layout: frontend/app/layout.tsx with position="top-center", expand, and rich color support.
+
+#### Modified
+
+- Replaced console-only error handling with user-facing toast notifications in authentication and UI flows:
+  - frontend/components/Navbar.tsx — show toast.error for logout failures (desktop & mobile).
+  - frontend/components/auth/AuthContext.tsx — surface errors from logout and register actions via toast.error; keep existing control flow.
+  - frontend/components/login-form.tsx — display login errors with toast.error instead of console logging.
+  - frontend/components/signup-form.tsx — remove local error state and show signup failures with toast.error.
 
 ### January 5, 2026
 
