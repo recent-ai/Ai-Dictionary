@@ -1,0 +1,73 @@
+import os
+from datetime import date, timedelta
+from newsapi import NewsApiClient
+from newspaper import Article
+from dotenv import load_dotenv
+import requests
+import json
+load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
+
+news_api_key = os.getenv('NEWSAPI_ORG_KEY')
+
+# Init
+
+newsapi = NewsApiClient(api_key=news_api_key)
+
+#using requests 
+def get_newsorg_data(q:str):
+    responses = requests.get(f'https://newsapi.org/v2/everything?q={q}&domains=techcrunch.com,thenextweb.com&from=2026-01-01&to=2026-01-05&apiKey={news_api_key}&')
+    combined = b"".join(responses)
+
+    try:
+        text = combined.decode("utf-8")
+        data = json.loads(text)
+    except json.JSONDecodeError as e:
+        print("Invalid JSON:", e)
+        print(text[:500])
+    
+    return data['articles']
+
+# for fetching the full article using the url 
+def get_full_article_content(url):
+    article = Article(url)
+    article.download()
+    article.parse()
+    return article.text
+
+
+#get the previous date
+def get_previous_day(today: date | None = None) -> date:
+    """
+    Returns preivous day's date.
+    Args:
+        today (date, optional): Provide a date for testing.
+                                Defaults to today's local date.
+    Returns:
+        date: Yesterday's date.
+    """
+    if today is None:
+        today = date.today()
+    return today - timedelta(days=2)
+
+
+#using function api 
+def get_newsapi_data():
+    all_articles = newsapi.get_everything(q='AI',
+                                      domains='techcrunch.com,thenextweb.com',
+                                      from_param=get_previous_day().strftime("%Y-%m-%d"), # previous date
+                                      to=date.today().strftime("%Y-%m-%d"), #latest/current date
+                                      language='en',
+                                      sort_by='relevancy',
+                                      )
+    clean_articals = []
+    for x in all_articles['articles']:
+        x['content'] = get_full_article_content(x['url']) #update content so it has full content fromt the article and does not show [+3000 chars..]
+        clean_articals.append({"website":x['url'],"description":x['content'],"title":x['title'],"created_at":x['publishedAt']})
+    
+    return clean_articals
+    
+
+
+   
+    
