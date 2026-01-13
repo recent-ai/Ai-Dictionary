@@ -102,6 +102,7 @@ def get_newsapi_data():
         )
     except Exception as e:
         print(f"Exception {e} occured while fetching articles")
+        return []
 
     clean_articles = []
     for x in all_articles["articles"]:
