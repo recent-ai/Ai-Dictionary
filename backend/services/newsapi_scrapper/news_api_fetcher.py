@@ -5,14 +5,21 @@ from newspaper import Article
 from dotenv import load_dotenv
 import requests
 import json
+import pprint
 load_dotenv()
 load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
 
 news_api_key = os.getenv('NEWSAPI_ORG_KEY')
-
+if not news_api_key:
+    raise ValueError(
+        "Environment variable 'NEWSAPI_ORG_KEY' is not set. "
+        "Please create a .env file in the backend/ directory with your API key."
+    )
 # Init
 
-newsapi = NewsApiClient(api_key=news_api_key)
+def get_newsapi_client():
+    return NewsApiClient(api_key=news_api_key)
+
 
 #using requests 
 def get_newsorg_data(q:str):
@@ -30,6 +37,12 @@ def get_newsorg_data(q:str):
 
 # for fetching the full article using the url 
 def get_full_article_content(url):
+    """
+    Returns the full artical data using url in string format.
+
+    PARAMS:url
+    RETURN:str 
+    """
     article = Article(url)
     article.download()
     article.parse()
@@ -53,6 +66,12 @@ def get_previous_day(today: date | None = None) -> date:
 
 #using function api 
 def get_newsapi_data():
+    """
+    fetch articals using newsapi
+
+    Return : list of dictionary containing website(url),description , title,created_at
+    """
+    newsapi = get_newsapi_client()
     all_articles = newsapi.get_everything(q='AI',
                                       domains='techcrunch.com,thenextweb.com',
                                       from_param=get_previous_day().strftime("%Y-%m-%d"), # previous date
@@ -69,5 +88,3 @@ def get_newsapi_data():
     
 
 
-   
-    
