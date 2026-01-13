@@ -1,13 +1,15 @@
-import os
 from datetime import date, timedelta
+from dotenv import load_dotenv
 from newsapi import NewsApiClient
 from newspaper import Article
-from dotenv import load_dotenv
-import requests
+from newspaper.article import ArticleException
 import json
+import os
 import pprint
+import requests
+import ssl
 load_dotenv()
-load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
+# load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
 
 news_api_key = os.getenv('NEWSAPI_ORG_KEY')
 if not news_api_key:
@@ -43,10 +45,25 @@ def get_full_article_content(url):
     PARAMS:url
     RETURN:str 
     """
-    article = Article(url)
-    article.download()
-    article.parse()
-    return article.text
+    try: 
+        article = Article(url)
+        article.download()
+        article.parse()
+        return article.text
+    
+    except ArticleException as e:
+        print(f"Article parse failed: {url} | {e}")
+        return None
+
+    except ssl.SSLError as e:
+        print(f"SSL error while fetching: {url} | {e}")
+        return None
+
+    except Exception as e:
+        print(f"Unexpected error scraping {url}", exc_info=True)
+        return None
+
+    
 
 
 #get the previous date
@@ -71,18 +88,26 @@ def get_newsapi_data():
 
     Return : list of dictionary containing website(url),description , title,created_at
     """
-    newsapi = get_newsapi_client()
-    all_articles = newsapi.get_everything(q='AI',
+    try:
+        newsapi = get_newsapi_client()
+        all_articles = newsapi.get_everything(q='AI',
                                       domains='techcrunch.com,thenextweb.com',
                                       from_param=get_previous_day().strftime("%Y-%m-%d"), # previous date
                                       to=date.today().strftime("%Y-%m-%d"), #latest/current date
                                       language='en',
                                       sort_by='relevancy',
                                       )
+    except Exception as e:
+        print(f"Exception {e} occured while fetching articals")
+
     clean_articals = []
     for x in all_articles['articles']:
         x['content'] = get_full_article_content(x['url']) #update content so it has full content fromt the article and does not show [+3000 chars..]
-        clean_articals.append({"website":x['url'],"description":x['content'],"title":x['title'],"created_at":x['publishedAt']})
+        if x['content'] == None:
+            print("skipping full artical")
+            continue    
+        else:   
+            clean_articals.append({"website":x['url'],"description":x['content'],"title":x['title'],"created_at":x['publishedAt']})
     
     return clean_articals
     
