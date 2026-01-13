@@ -9,6 +9,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### January 13, 2026
+#### Added
+
+- supabase/migrations/20260113133120_create_raw_api_data_table.sql
+  - New migration creating public.raw_api_data with columns:
+    - id (uuid, default gen_random_uuid()), created_at (timestamptz, default now() at UTC)
+    - source_name (varchar, default ''), description (varchar, default ''), website (text, default ''), title (varchar, default '')
+  - Row Level Security enabled.
+  - Unique indexes/constraints on id, title, website.
+  - Explicit grants for anon, authenticated, postgres, service_role roles.
+- backend/db/repository/insert_newsapi_data.py
+  - New `insert_articles(rows: list)` function:
+    - Validates and filters input (requires website and title).
+    - Upserts valid rows into raw_api_data using on_conflict="website".
+    - Returns inserted count and handles empty/invalid input and insertion errors.
+- backend/services/newsapi_scrapper/news_api_fetcher.py
+  - New NewsAPI-based data loader and utilities:
+    - Loads NEWSAPI_ORG_KEY via dotenv; raises if missing.
+    - `get_newsapi_client():` returns NewsApiClient.
+    - `get_newsorg_data(q: str):` fetches articles via requests for specified domains/date window and returns articles.
+    - `get_full_article_content(url):` downloads and parses full article text using newspaper3k; handles parse, SSL, and generic errors.
+    - `get_previous_day(today: date | None = None) -> date:` returns date two days prior.
+    - `get_newsapi_data():` orchestrates fetching articles for q="AI", enriches with full article content, filters out failed enrichments, and returns list of dicts with keys {website, description, title, created_at}.
+- backend/services/newsapi_scrapper/test_news_api_fetcher.py
+  - Unit tests added for:
+    - `get_previous_day` (with and without explicit date).
+    - `get_full_article_content` (monkeypatched).
+    - `get_newsorg_data` (requests.get mocked).
+    - `get_newsapi_data` (NewsApiClient and content extraction mocked).
+#### Changed
+- backend/pyproject.toml
+  - Added/updated runtime and test dependencies:
+    - `lxml-html-clean>=0.4.3`, `newsapi-python>=0.2.7`, `newspaper3k>=0.2.8`
+    - `pytest>=9.0.2` (testing)
+    - Other dependency list updated; python-dotenv and requests included.
+- backend/.gitignore
+  - Ignore notebooks/ directory.
+- backend/db/client.py
+  - Load environment variables via python-dotenv at import time; Supabase client reads SUPABASE_URL and SUPABASE_KEY from .env and initializes supabase client.
+### January 13, 2026
 
 #### Changed
 
