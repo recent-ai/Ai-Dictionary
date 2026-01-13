@@ -145,8 +145,10 @@ class ProductHuntWrapper:
             >>> # Get custom number of products
             >>> products= wrapper.get_top_products_by_topic("developer-tools", limit=20)
         """
-        if not topic or not isinstance(topic, str) or not topic.strip() or limit <= 0:
+        if not topic or not isinstance(topic, str) or not topic.strip():
             raise ValueError("Topic is required and must be a non-empty string")
+        if limit <= 0:
+            raise ValueError("Limit must be a positive integer")
 
         date_yesterday = date_check()
         query = f"""
