@@ -20,6 +20,23 @@ Note:
     This module requires further improvements including enhanced error handling,
     code formatting improvements, additional topic support, and better output
     formatting.
+
+    Another addition to the note is this requires more scraping/crawling to get more
+    data for the product
+    We could use FireCrawler(Again 🤔)
+       - Probably using /crawl endpoint - Provides multiple JSON outputs
+        for different data points
+       - /agent endpoint(5 runs daily limit)-Providing links and nicely written prompts
+        Ex - https://pickey.ai/?ref=producthunt
+        This is a AI product from Product Hunt
+        Extract, Scrape and Crawl the whole website and provide as
+        much information as you can for the website. We want to write a blog for
+        this product explaining the product in a structured way and humane
+        format with examples of tools on usage, doc references, Code Examples .etc.
+        I want all accurate information about the product. Don't assume and
+        provide inaccurate information Structure the output in a such a way
+        that we are writing a blog page for this product having - Title, Summary(small),
+        Description( Full Explanation detailed), Code Examples/ Docs, Links, End
 """
 
 from datetime import UTC, datetime, timedelta
@@ -112,24 +129,23 @@ class ProductHuntWrapper:
 
         Returns:
             list: List of dictionaries containing product details including id, name,
-                tagline, createdAt, votesCount, description, reviewsCount, slug,
-                and website. Returns empty list if no products found.
+                tagline, createdAt, description, slug, website, url, and comments.
+                Returns empty list if no products found.
 
         Raises:
-            ValueError: If topic is None, not a string, or empty/whitespace only.
+            ValueError: If topic is None, not a string, or empty/whitespace only .
+                        or if limit is less than or equal to zero.
 
         Example:
             >>> wrapper = ProductHuntWrapper(access_token="your_token")
             >>> # Get AI products
-            >>> ai_products = wrapper.get_top_products_by_topic
-            ("artificial-intelligence")
+            >>> ai_products=wrapper.get_top_products_by_topic("artificial-intelligence")
             >>> # Get Developer Tools products
             >>> dev_tools = wrapper.get_top_products_by_topic("developer-tools")
             >>> # Get custom number of products
-            >>> products = wrapper.get_top_products_by_topic
-            ("developer-tools", limit=20)
+            >>> products= wrapper.get_top_products_by_topic("developer-tools", limit=20)
         """
-        if not topic or not isinstance(topic, str) or not topic.strip():
+        if not topic or not isinstance(topic, str) or not topic.strip() or limit <= 0:
             raise ValueError("Topic is required and must be a non-empty string")
 
         date_yesterday = date_check()
@@ -173,7 +189,7 @@ class ProductHuntWrapper:
 
         response = url_call(query, self.access_token)
         items = response.get("data", {}).get("posts", {}).get("edges", [])
-        if items is None:
+        if items == []:
             print("No items found in the response.")
             return []
 
