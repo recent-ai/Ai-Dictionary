@@ -2,15 +2,14 @@ import json
 from datetime import date
 from unittest.mock import patch, MagicMock
 
-import pytest
-
 # IMPORTANT:
 # Update this import path ONLY if your file location is different
-import news_api_fetcher 
+import news_api_fetcher
 
 # --------------------------------------------------
 # Test: get_previous_day
 # --------------------------------------------------
+
 
 def test_get_previous_day_with_given_date():
     test_date = date(2026, 1, 10)
@@ -28,26 +27,18 @@ def test_get_previous_day_without_argument():
 # Test: get_full_article_content
 # --------------------------------------------------
 
+
 def test_get_full_article_content(monkeypatch):
     def fake_get_full_article_content(url):
         return "This is the full article content."
 
     monkeypatch.setattr(
-        news_api_fetcher,
-        "get_full_article_content",
-        fake_get_full_article_content
+        news_api_fetcher, "get_full_article_content", fake_get_full_article_content
     )
 
-    content = news_api_fetcher.get_full_article_content(
-        "https://example.com/article"
-    )
+    content = news_api_fetcher.get_full_article_content("https://example.com/article")
 
     assert content == "This is the full article content."
-
-
-
-
-
 
 
 # --------------------------------------------------
@@ -56,9 +47,7 @@ def test_get_full_article_content(monkeypatch):
 @patch("services.newsapi_scrapper.news_api_fetcher.requests.get")
 def test_get_newsorg_data(mock_get):
     fake_response_data = {
-        "articles": [
-            {"title": "AI News", "url": "https://example.com"}
-        ]
+        "articles": [{"title": "AI News", "url": "https://example.com"}]
     }
 
     mock_response = MagicMock()
@@ -78,6 +67,7 @@ def test_get_newsorg_data(mock_get):
 # Test: get_newsapi_data
 # --------------------------------------------------
 
+
 def test_get_newsapi_data(monkeypatch):
     import services.newsapi_scrapper.news_api_fetcher as naf
 
@@ -95,9 +85,7 @@ def test_get_newsapi_data(monkeypatch):
 
     monkeypatch.setattr(naf, "get_newsapi_client", lambda: mock_client)
     monkeypatch.setattr(
-        naf,
-        "get_full_article_content",
-        lambda url: "Full AI article content"
+        naf, "get_full_article_content", lambda url: "Full AI article content"
     )
 
     result = naf.get_newsapi_data()
@@ -105,10 +93,3 @@ def test_get_newsapi_data(monkeypatch):
     assert len(result) == 1
     assert result[0]["title"] == "AI Breakthrough"
     assert result[0]["description"] == "Full AI article content"
-
-
-
-
-
-
-
