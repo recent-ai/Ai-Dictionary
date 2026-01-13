@@ -10,8 +10,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### January 13, 2026
 
+#### Added
+
+- supabase/migrations/20260113133120_create_raw_api_data_table.sql
+  - New migration creating public.raw_api_data with columns:
+    - id (uuid, default gen_random_uuid()), created_at (timestamptz, default now() at UTC)
+    - source_name (varchar, default ''), description (varchar, default ''), website (text, default ''), title (varchar, default '')
+- backend/db/repository/insert_newsapi_data.py
+  - New `insert_articles(rows: list)` function:
+    - Validates and filters input (requires website and title).
+    - Upserts valid rows into raw_api_data using on_conflict="website".
+    - Returns inserted count and handles empty/invalid input and insertion errors.
+- backend/services/newsapi_scrapper/news_api_fetcher.py
+  - New NewsAPI-based data loader with utilities: loads API key via dotenv, provides client, fetches articles, downloads full content using newspaper3k with error handling, and orchestrates AI article enrichment.
+- backend/services/newsapi_scrapper/test_news_api_fetcher.py
+  - Unit tests for get_previous_day, get_full_article_content, get_newsorg_data, and get_newsapi_data functions.
+
 #### Changed
 
+- backend/pyproject.toml
+  - Added/updated runtime and test dependencies:
+    - `lxml-html-clean>=0.4.3`, `newsapi-python>=0.2.7`, `newspaper3k>=0.2.8`
+    - `pytest>=9.0.2` (testing)
+    - Other dependency list updated; python-dotenv and requests included.
+- backend/.gitignore
+  - Ignore notebooks/ directory.
+- backend/db/client.py
+  - Load environment variables via python-dotenv at import time; Supabase client reads SUPABASE_URL and SUPABASE_KEY from .env and initializes supabase client.
+
+- Updated backend dependencies in pyproject.toml.
+- Added notebooks/ to .gitignore.
+- Modified db/client.py to load env vars and initialize Supabase client.
 - Refactored Product Hunt wrapper (`backend/services/product_hunt_wrapper/ph_wrapper.py`) to consolidate topic-specific methods into a single parameterized `get_top_products_by_topic()` method, removing duplicated code and following DRY principles. Enhanced GraphQL query to include comments data and improved input validation with ValueError for invalid topics or limits.
 - Updated test suite (`backend/services/product_hunt_wrapper/test_ph_wrapper.py`) to use the new parameterized method for AI and developer tools topics.
 - Resolved issue #29 by refactoring methods in ProductHunt class, with minor documentation and example updates.
