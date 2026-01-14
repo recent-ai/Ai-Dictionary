@@ -6,8 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased]
 
+### January 14, 2026
+
+#### Fixed
+- Database Column Population: Inserted source name field in API response to populate the `source_name` column in the database.
+  - `services/newsapi_scrapper/news_api_fetcher.py`: Added `source_name` to each article dictionary (populated from `x["source"]["name"]`) returned by `get_newsapi_data`.
+  - `db/repository/insert_newsapi_data.py`: Uses the enhanced article objects when upserting into `raw_api_data` (imported `get_newsapi_data`).
+
+#### Changed
+- Article structure: `get_newsapi_data()` now returns articles with fields: `source_name`, `website`, `description` (full scraped content), `title`, and `created_at`.
+- Data fetching: Full article content is populated via `get_full_article_content()` before articles are added to the cleaned list.
+- Minor docstring cleanup: whitespace-only edit in `get_previous_day()`.
+
+#### Other
+- Cleanup commit: removed a test script to tidy the module.
 ### January 13, 2026
 
 #### Added
