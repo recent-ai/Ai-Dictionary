@@ -36,7 +36,3 @@ def insert_articles(rows: list):
         return {"inserted": 0}
 
 
-if __name__ == "__main__":
-    raw = get_newsapi_data()
-    response = insert_articles(raw)
-    print(response)
