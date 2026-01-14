@@ -1,5 +1,5 @@
 from db.client import supabase
-
+from services.newsapi_scrapper.news_api_fetcher import get_newsapi_data
 
 
 def insert_articles(rows: list):
@@ -36,3 +36,7 @@ def insert_articles(rows: list):
         return {"inserted": 0}
 
 
+if __name__ == "__main__":
+    raw = get_newsapi_data()
+    response = insert_articles(raw)
+    print(response)
