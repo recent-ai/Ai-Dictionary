@@ -19,8 +19,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Data fetching: Full article content is populated via `get_full_article_content()` before articles are added to the cleaned list.
 - Minor docstring cleanup: whitespace-only edit in `get_previous_day()`.
 
+
+#### Added 
+
+- Blog Listing Page: New frontend component for displaying all blog posts in a responsive grid layout
+- Shows blog metadata including title, summary, cover image, tags, author, date, and read time
+- Blog Page Assets - Static svgs for static blog pages.  
+
 #### Other
 - Cleanup commit: removed a test script to tidy the module.
+
 ### January 13, 2026
 
 #### Added
