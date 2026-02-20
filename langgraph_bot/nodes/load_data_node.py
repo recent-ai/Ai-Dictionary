@@ -1,7 +1,7 @@
 from langgraph_bot.agentschema.stateschema import State
 
 
-def load_data(state: State):
+def load_data(_state: State):
     ### write logic for the data coming from db.
 
     # async def load_data_node(state: State):

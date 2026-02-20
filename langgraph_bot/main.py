@@ -4,10 +4,8 @@ from .workflow.description_workflow import g
 
 
 def run_entire_flow():
-    c = 1
     all_posts = []
-    for post in fetch_last_days_posts():
-        c += 1
+    for c, post in enumerate(fetch_last_days_posts(), 1):
         print("count", c)
         initial_state = {
             "user_input": None,  #    given to the orchestrator or supervisor by human.
@@ -32,8 +30,8 @@ def run_entire_flow():
 
 
 if __name__ == "__main__":
-    fianl_ans = run_entire_flow()
-    for x in fianl_ans:
+    final_ans = run_entire_flow()
+    for x in final_ans:
         for i in x:
             print("-" * 60)
             print(x[i])

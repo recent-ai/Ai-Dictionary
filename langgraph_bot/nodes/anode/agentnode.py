@@ -31,9 +31,9 @@ def description_agent_node(state: State):
     Provide a detailed, well-structured description that combines insights from both sources.
     """
 
-    response = agent.invoke({"messages": [HumanMessage(content=last_message)]})
 
     try:
+        response = agent.invoke({"messages": [HumanMessage(content=last_message)]})
         if response:
             if isinstance(response, dict) and "messages" in response:
                 description = response["messages"][-1].content

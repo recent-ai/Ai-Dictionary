@@ -7,7 +7,6 @@ load_dotenv()
 
 # Initialization of Supabase client goes here
 url = os.getenv("SUPABASE_URL")
-# print(url)
 if not url:
     raise ValueError("SUPABASE_URL environment variable is required")
 
