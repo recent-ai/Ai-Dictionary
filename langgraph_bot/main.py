@@ -30,6 +30,10 @@ def run_entire_flow():
 
 
 if __name__ == "__main__":
+    # # Generate the workflow graph PNG on startup (and ensure output directory exists).
+    # graph_path = write_description_graph_png()
+    # print(f"Workflow graph written to: {graph_path}")
+
     final_ans = run_entire_flow()
     for x in final_ans:
         for i in x:
