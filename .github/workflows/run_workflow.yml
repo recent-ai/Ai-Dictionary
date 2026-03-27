@@ -9,7 +9,7 @@ on:
 jobs:
   run-langgraph-bot:
     runs-on: ubuntu-latest
-    environment: backend
+    environment: Workflow
 
     timeout-minutes: 30
 
