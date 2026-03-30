@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### Added
 
 - **GitHub Actions workflow** (.github/workflows/run_workflow.yml)
-  - Workflow name: "Run Test LangGraph Bot Worflow"
+  - Workflow name: "Run Test LangGraph Bot Workflow"
   - Triggers: manual (workflow_dispatch) and daily cron at 14:00 UTC
   - Job: `run-langgraph-bot` on `ubuntu-latest` (environment: backend), 30-minute timeout
   - Steps: checkout, install `uv` (with cache), install Python 3.12.5, sync dependencies for `./backend` and `./langgraph_bot` (`uv sync --frozen`), run LangGraph bot (`uv run python -m langgraph_bot.main`)
