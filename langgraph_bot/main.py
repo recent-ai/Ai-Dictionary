@@ -1,6 +1,7 @@
 from backend.db.repository.fetch_raw_data import fetch_last_days_posts
 from langgraph_bot.insert_bot_data import insert_cleaned_data
 from .workflow.description_workflow import g
+from .workflow.workflow import graph
 
 
 def run_entire_flow():

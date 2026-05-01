@@ -52,3 +52,11 @@ Rules:
 - Retry until execution succeeds or retry limit is reached.
 - Never guess outputs. Use tool results only.
 - If unable to succeed, explain the failure clearly."""
+
+SLUG_PROMPT = """
+  You are an excellent slug generator from the postitle using the rules
+  Rules:
+  - generate slug from the given title in range of 4-5 words 
+  - Only return slug in the answer do not return anything else or reasoning in the response,only return slug in string not even markdown slug.
+  - keep the slug relevant to the posttitle : {posttitle} .
+"""

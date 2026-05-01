@@ -9,6 +9,7 @@ from typing import Annotated, TypedDict, List, Union, Optional
 class State(TypedDict):
     user_input: Optional[Union[str, list]]
     messages: Annotated[list[BaseMessage], add_messages]
+    slug:Optional[str]
     data: Optional[str]
     topic: Optional[str]
     title: Optional[str]
