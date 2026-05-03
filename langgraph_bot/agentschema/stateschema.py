@@ -35,15 +35,14 @@ class State(TypedDict):
     
     # Lists work perfectly with operator.add
     messages: Annotated[list[BaseMessage], add_messages]
-    arxiv_urls: Annotated[List[str], operator.add] 
-    documents: Annotated[List[dict], operator.add] 
-    
+    arxiv_urls: Annotated[List[dict], operator.add]
+    documents: Annotated[List[Document], operator.add]
     # These also need reducers if multiple nodes update them at once
     topic: Annotated[Optional[str], overwrite]
     title: Annotated[Optional[str], overwrite]
     summary: Annotated[Optional[str], overwrite]
     description: Annotated[Optional[str], overwrite]
     
-    data: Annotated[str,overwrite]
-    tavily_search_result: Annotated[str,overwrite]
-    code: Annotated[str,overwrite]
+    data: Annotated[Optional[str], overwrite]
+    tavily_search_result: Annotated[Optional[str], overwrite]
+    code: Annotated[Optional[str], overwrite]
