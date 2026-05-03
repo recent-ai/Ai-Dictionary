@@ -1,6 +1,9 @@
 SUMMARY_PROMPT = """
         You are a SUMMARY EXPERT .
-           you generate summary of the content given by the user.
+           you generate summary of the content using the data from the state.
+           - keep the summary professional , and easy to understand.
+           - the summary should be atleast 70 words or more.
+           - strictly return only summary in the string format, do not include anything.
 """
 
 TITLE_PROMPT = """
@@ -59,4 +62,5 @@ SLUG_PROMPT = """
   - generate slug from the given title in range of 4-5 words 
   - Only return slug in the answer do not return anything else or reasoning in the response,only return slug in string not even markdown slug.
   - keep the slug relevant to the posttitle : {posttitle} .
+  - connect words with hyphens(-) instead of spaces.
 """
