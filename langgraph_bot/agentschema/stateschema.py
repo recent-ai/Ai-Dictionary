@@ -6,9 +6,19 @@ from typing import Annotated, TypedDict, List, Union, Optional
 # from typing_extensions import TypedDict
 
 def replace_reducer(current: str, new: str) -> str:
-    if current :
+    """
+    Params: 
+    current : current value of the field of the state.
+    new : new value addded to the state by some other graph to the field.
+
+    In Langgraph when we have to simultanously manipulate state, it cannot be done directly , 
+    we have do append operation . if both operation takes place at same time it might be posible to override the current value with none, 
+    to overcome this issue, this reducer fucntion is here.
+    """
+    if current is None :
+        return new
+    elif new is None:
         return current
-    return new
 
 class State(TypedDict):
     # If you want to keep history of strings, use operator.add
