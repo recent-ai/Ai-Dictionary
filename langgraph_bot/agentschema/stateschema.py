@@ -5,44 +5,37 @@ from pydantic import HttpUrl
 from typing import Annotated, TypedDict, List, Union, Optional
 # from typing_extensions import TypedDict
 
-def overwrite(current: str, new: str) -> str:
-    if current :
+def replace_reducer(current: str, new: str) -> str:
+    """
+    Params: 
+    current : current value of the field of the state.
+    new : new value addded to the state by some other graph to the field.
+
+    In Langgraph when we have to simultanously manipulate state, it cannot be done directly , 
+    we have do append operation . if both operation takes place at same time it might be posible to override the current value with none, 
+    to overcome this issue, this reducer fucntion is here.
+    """
+    if current is None :
+        return new
+    elif new is None:
         return current
-    return new
-
-
-# class State(TypedDict):
-#     user_input: Annotated[str, operator.add]
-#     messages: Annotated[list[BaseMessage], add_messages]
-#     slug:Annotated[str,operator.add]
-#     data: Optional[str]
-#     topic: Optional[str]
-#     title: Optional[str]
-#     summary: Optional[str]
-#     description: Optional[str]
-#     arxiv_urls: Annotated[List[HttpUrl], operator.add]  ##
-#     documents: Annotated[
-#         List[Document], operator.add
-#     ]  ## pdf's pages will be stored here, pdfs will be fetched from the arxiv.
-#     tavily_search_result: Optional[str]
-    # code: Optional[str]
 
 class State(TypedDict):
     # If you want to keep history of strings, use operator.add
     # If you just want the current value, use 'overwrite'
-    user_input: Annotated[str, overwrite] 
-    slug: Annotated[str, overwrite]
+    user_input: Annotated[str, replace_reducer] 
+    slug: Annotated[str, replace_reducer]
     
     # Lists work perfectly with operator.add
     messages: Annotated[list[BaseMessage], add_messages]
-    arxiv_urls: Annotated[List[dict], operator.add]
+    arxiv_urls: Annotated[List[HttpUrl], operator.add]
     documents: Annotated[List[Document], operator.add]
     # These also need reducers if multiple nodes update them at once
-    topic: Annotated[Optional[str], overwrite]
-    title: Annotated[Optional[str], overwrite]
-    summary: Annotated[Optional[str], overwrite]
-    description: Annotated[Optional[str], overwrite]
+    topic: Annotated[Optional[str], replace_reducer]
+    title: Annotated[Optional[str], replace_reducer]
+    summary: Annotated[Optional[str], replace_reducer]
+    description: Annotated[Optional[str], replace_reducer]
     
-    data: Annotated[Optional[str], overwrite]
-    tavily_search_result: Annotated[Optional[str], overwrite]
-    code: Annotated[Optional[str], overwrite]
+    data: Annotated[Optional[str], replace_reducer]
+    tavily_search_result: Annotated[Optional[str], replace_reducer]
+    code: Annotated[Optional[str], replace_reducer]

@@ -1,3 +1,4 @@
+from pathlib import Path
 import pprint
 
 from langchain_core.messages import HumanMessage
@@ -27,17 +28,15 @@ graph_builder.add_edge("slug_node",END)
 graph = graph_builder.compile()
 
 
-# inputs = {
-#     "messages": [
-#         HumanMessage(
-#             content="use appropriate agents to summarize the content  given in the agent state."
-#         )
-#     ]
-# }
 
-# final_state = graph.invoke(inputs)
+def write_graph_summarygraph_png() -> None:
+    """
+        Write the compiled graph diagram to `langgraph_bot/agent_flow_diagrams/summaryagent.png`.
+        Ensures the output directory exists
+    """
+    out_dir = Path(__file__).resolve().parents[1] / "agent_flow_diagrams"
 
-# for i in final_state:
-#     print(f"{i} : ",final_state[i])
-
-graph.get_graph().draw_mermaid_png(output_file_path="./summaryagent.png")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "summaryagent.png"
+    graph.get_graph().draw_mermaid_png(output_file_path=str(out_path))
+    return out_path

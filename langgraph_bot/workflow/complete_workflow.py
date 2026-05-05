@@ -15,10 +15,16 @@ completegraph.add_edge("description_node",END)
 
 mjorgraph = completegraph.compile()
 
-out_dir = Path(__file__).resolve().parents[1] / "agent_flow_diagrams"
+def write_complete_graph_png() -> Path:
+    """
+        Write the compiled graph diagram to `langgraph_bot/agent_flow_diagrams/completegraph.png`.
+        Ensures the output directory exists
+    """
+    out_dir = Path(__file__).resolve().parents[1] / "agent_flow_diagrams"
 
-out_dir.mkdir(parents=True, exist_ok=True)
-out_path = out_dir / "completegraph.png"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "completegraph.png"
 
-mjorgraph.get_graph().draw_mermaid_png(output_file_path=str(out_path))
+    mjorgraph.get_graph().draw_mermaid_png(output_file_path=str(out_path))
+    return out_path
 
