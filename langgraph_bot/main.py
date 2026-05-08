@@ -35,7 +35,7 @@ def run_entire_flow():
                 "summary": result.get("summary"),
                 "description": result.get("description"),
                 "source": post.get("source_name"),
-                "slug":result.get("slug")
+                "slug":result.get("slug") or ""
             }
             time.sleep(12)
         except Exception as e:
