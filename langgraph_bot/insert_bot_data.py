@@ -28,6 +28,7 @@ def insert_cleaned_data(posts: list):
                 "content": {
                     "summary": post.get("summary"),
                     "description": post.get("description"),
+                    "slug": post.get("slug"),
                 },
                 "isoldpost": False,
             }
