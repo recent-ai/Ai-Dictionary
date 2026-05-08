@@ -15,10 +15,11 @@ def replace_reducer(current: str, new: str) -> str:
     we have do append operation . if both operation takes place at same time it might be posible to override the current value with none, 
     to overcome this issue, this reducer fucntion is here.
     """
-    if current is None :
+    if new is not None:
         return new
-    elif new is None:
+    if current is not None:
         return current
+    return ""
 
 class State(TypedDict):
     # If you want to keep history of strings, use operator.add
