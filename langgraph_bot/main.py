@@ -1,9 +1,10 @@
 from backend.db.repository.fetch_raw_data import fetch_last_days_posts
 from langgraph_bot.insert_bot_data import insert_cleaned_data
-from .workflow.description_workflow import g,write_description_graph_png
+from .workflow.description_workflow import write_description_graph_png
 from .workflow.complete_workflow import mjorgraph, write_complete_graph_png
-from .workflow.workflow import graph, write_graph_summarygraph_png
+from .workflow.workflow import write_graph_summarygraph_png
 import time
+import traceback
 
 
 def run_entire_flow():
@@ -37,11 +38,14 @@ def run_entire_flow():
                 "source": post.get("source_name"),
                 "slug":result.get("slug") or ""
             }
-            time.sleep(12)
         except Exception as e:
             print(f"Graph/mapping failed for post {post.get('title')}: {e}")
+            traceback.print_exc()
             continue
-
+        
+        finally:
+            time.sleep(12)  # Sleep to respect rate limits and avoid overwhelming the system
+            
         all_posts.append(clean_post)
         if c == 2:
             break

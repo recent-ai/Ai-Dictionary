@@ -29,7 +29,7 @@ graph = graph_builder.compile()
 
 
 
-def write_graph_summarygraph_png() -> None:
+def write_graph_summarygraph_png() -> Path:
     """
         Write the compiled graph diagram to `langgraph_bot/agent_flow_diagrams/summaryagent.png`.
         Ensures the output directory exists

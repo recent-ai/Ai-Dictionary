@@ -2,7 +2,7 @@ from langgraph.graph.message import add_messages, BaseMessage
 from langchain_core.documents import Document
 import operator
 from pydantic import HttpUrl
-from typing import Annotated, TypedDict, List, Union, Optional
+from typing import Annotated, TypedDict, List, Optional
 # from typing_extensions import TypedDict
 
 def replace_reducer(current: str, new: str) -> str:
