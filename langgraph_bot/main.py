@@ -33,6 +33,7 @@ def run_entire_flow():
             # Return clean structured output with only relevant fields
             clean_post = {
                 "title": result.get("title") or post.get("title"),
+                "title_block": result.get("title_block"),
                 "summary": result.get("summary"),
                 "description": result.get("description"),
                 "source": post.get("source_name"),

@@ -3,28 +3,24 @@ import pprint
 
 from langchain_core.messages import HumanMessage
 from langgraph.graph import END, START, StateGraph
-from langgraph.prebuilt import ToolNode
 
 from langgraph_bot.agentschema.stateschema import State
 from langgraph_bot.nodes.anode.agentnode import summary_agent_node
 from langgraph_bot.nodes.load_data_node import load_data
-from langgraph_bot.nodes.tnode.title_node import update_title_node
+from langgraph_bot.nodes.tnode.title_node import generate_title_block_node
 from langgraph_bot.nodes.tnode.slug_update_node import slug_node
-from langgraph_bot.tools.tools import title_tool
 
 graph_builder = StateGraph(state_schema=State)
 # graph_builder.add_node("load_data", load_data)
+graph_builder.add_node("generate_title_block", generate_title_block_node)
 graph_builder.add_node("summary_agent", summary_agent_node)
-graph_builder.add_node("title_tool_node", ToolNode([title_tool]))
-graph_builder.add_node("title_update", update_title_node)
 graph_builder.add_node("slug_node",slug_node)
 
 
-graph_builder.add_edge(START, "summary_agent")
-graph_builder.add_edge("summary_agent", "title_tool_node")
-graph_builder.add_edge("title_tool_node", "title_update")
-graph_builder.add_edge("title_update", "slug_node")
-graph_builder.add_edge("slug_node",END)
+graph_builder.add_edge(START, "generate_title_block")
+graph_builder.add_edge("generate_title_block", "slug_node")
+graph_builder.add_edge("slug_node", "summary_agent")
+graph_builder.add_edge("summary_agent",END)
 graph = graph_builder.compile()
 
 

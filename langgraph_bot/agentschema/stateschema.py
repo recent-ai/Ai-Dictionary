@@ -21,6 +21,15 @@ def replace_reducer(current: str, new: str) -> str:
         return current
     return ""
 
+
+def replace_dict_reducer(current: Optional[dict], new: Optional[dict]) -> dict:
+    if new is not None:
+        return new
+    if current is not None:
+        return current
+    return {}
+
+
 class State(TypedDict):
     # If you want to keep history of strings, use operator.add
     # If you just want the current value, use 'overwrite'
@@ -34,6 +43,7 @@ class State(TypedDict):
     # These also need reducers if multiple nodes update them at once
     topic: Annotated[Optional[str], replace_reducer]
     title: Annotated[Optional[str], replace_reducer]
+    title_block: Annotated[Optional[dict], replace_dict_reducer]
     summary: Annotated[Optional[str], replace_reducer]
     description: Annotated[Optional[str], replace_reducer]
     
