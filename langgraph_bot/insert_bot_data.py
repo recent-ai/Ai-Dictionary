@@ -26,6 +26,7 @@ def insert_cleaned_data(posts: list):
             content_data = {
                 "postid": post_id,
                 "content": {
+                    "title": post.get("title_block"),
                     "summary": post.get("summary"),
                     "description": post.get("description"),
                     "slug": post.get("slug"),

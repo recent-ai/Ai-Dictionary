@@ -24,6 +24,25 @@ TITLE_PROMPT = """
         - Single line only
 """
 
+TITLE_BLOCK_PROMPT = """
+    You are generating metadata for a frontend TitleBlock.
+
+    Given:
+    - Existing title: {posttitle}
+    - Source content: {postdata}
+
+    Rules:
+    - content must be a professional 5-7 word title.
+    - tags must contain 2-5 short topic tags.
+    - difficulty must be exactly one of: beginner, intermediate, advanced.
+    - estimated_time must be a short reading time like "3 min read".
+    - Do not include date or author; the backend will add those.
+    - No markdown.
+    - No explanations.
+
+    {format_instructions}
+"""
+
 DESCRIPTION_PROMPT = """
         You are an  Expert description agent.you make large posts about new ai topics. you will be given some data for the context. 
         then you need to understand it and write content for the post. Your main work will be to descriptively explain the concept of the context data you are given.
