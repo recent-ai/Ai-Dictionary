@@ -34,6 +34,7 @@ class State(TypedDict):
     # These also need reducers if multiple nodes update them at once
     topic: Annotated[Optional[str], replace_reducer]
     title: Annotated[Optional[str], replace_reducer]
+    title_block: Annotated[Optional[dict], replace_reducer]
     summary: Annotated[Optional[str], replace_reducer]
     description: Annotated[Optional[str], replace_reducer]
     
