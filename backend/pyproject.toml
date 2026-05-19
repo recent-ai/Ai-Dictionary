@@ -39,3 +39,6 @@ select = [
     # flake8-bugbear
     "B"
 ]
+ignore = [
+    "E501"
+]

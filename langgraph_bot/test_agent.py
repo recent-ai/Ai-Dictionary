@@ -1,6 +1,5 @@
 # from markdown import markdown
 # from bs4 import BeautifulSoup
-from agents.description_agent import agent
 from workflow.description_workflow import g
 
 

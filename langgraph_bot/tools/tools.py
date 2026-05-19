@@ -1,11 +1,9 @@
 from dotenv import load_dotenv
-load_dotenv()
 import os
 import subprocess
 import tempfile
 from typing import Dict, List
 import requests
-# from langchain.messages import ToolMessage
 from langchain.tools import tool
 from langchain_community.document_loaders import (
     ArxivLoader,
@@ -13,9 +11,9 @@ from langchain_community.document_loaders import (
     UnstructuredPDFLoader,
 )
 from langchain_tavily import TavilySearch
-from langgraph.types import Command
 from langgraph_bot.models.generativemodel import groqmodel
 from langgraph_bot.utils.prompts import TITLE_PROMPT,SLUG_PROMPT
+load_dotenv()
 
 
 ## SUMMMARY AGENT TOOLS
@@ -122,7 +120,7 @@ def pdfreader_tool(pdf_list: List[Dict]) -> List:
             loader = UnstructuredPDFLoader(pdf_path)
             docs = loader.load()
             all_docs.extend(docs)
-        except (requests.RequestException, Exception) as e:
+        except (requests.RequestException, Exception):
             # Log error or handle gracefully - skip this PDF and continue
             pass
         finally:
