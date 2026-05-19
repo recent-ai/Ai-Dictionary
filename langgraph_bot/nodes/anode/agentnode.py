@@ -1,4 +1,4 @@
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from langgraph_bot.agents.description_agent import agent
 from langgraph_bot.agents.summaryagent import s_agent
 from langgraph_bot.agentschema.stateschema import State

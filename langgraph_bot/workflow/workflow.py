@@ -1,12 +1,9 @@
 from pathlib import Path
-import pprint
 
-from langchain_core.messages import HumanMessage
 from langgraph.graph import END, START, StateGraph
 
 from langgraph_bot.agentschema.stateschema import State
 from langgraph_bot.nodes.anode.agentnode import summary_agent_node
-from langgraph_bot.nodes.load_data_node import load_data
 from langgraph_bot.nodes.tnode.title_node import generate_title_block_node
 from langgraph_bot.nodes.tnode.slug_update_node import slug_node
 

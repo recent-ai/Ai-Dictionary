@@ -1,8 +1,6 @@
 from dotenv import load_dotenv
 from langchain.rate_limiters import InMemoryRateLimiter
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
-from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
