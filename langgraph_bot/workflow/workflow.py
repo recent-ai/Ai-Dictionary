@@ -6,18 +6,21 @@ from langgraph_bot.agentschema.stateschema import State
 from langgraph_bot.nodes.anode.agentnode import summary_agent_node
 from langgraph_bot.nodes.tnode.title_node import generate_title_block_node
 from langgraph_bot.nodes.tnode.slug_update_node import slug_node
+from langgraph_bot.nodes.tnode.generate_image_node import generate_image
 
 graph_builder = StateGraph(state_schema=State)
 # graph_builder.add_node("load_data", load_data)
 graph_builder.add_node("generate_title_block", generate_title_block_node)
 graph_builder.add_node("summary_agent", summary_agent_node)
 graph_builder.add_node("slug_node",slug_node)
+graph_builder.add_node("image_generation_node",generate_image)
 
 
 graph_builder.add_edge(START, "generate_title_block")
 graph_builder.add_edge("generate_title_block", "slug_node")
 graph_builder.add_edge("slug_node", "summary_agent")
-graph_builder.add_edge("summary_agent",END)
+graph_builder.add_edge("summary_agent","image_generation_node")
+graph_builder.add_edge("image_generation_node", END)
 graph = graph_builder.compile()
 
 

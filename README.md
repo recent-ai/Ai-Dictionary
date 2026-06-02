@@ -4,11 +4,11 @@
 
 ## Vision
 
-In a world where AI developments happen at breakneck speed, staying informed shouldn't be a full-time job. AI Dictionary exists to bridge that gap by automatically curating, summarizing, and presenting the most relevant AI tools, news, and insights in one accessible platform. We believe developers and AI enthusiasts deserve a streamlined way to discover what matters without the noise.
+In a world where AI developments happen at breakneck speed, staying informed shouldn't be a full-time job. AI Dictionary exists to bridge that gap by automatically curating, summarizing, and presenting the most relevant AI tools, research, and industry news in one accessible platform. The current codebase is now split across 3 layers: a Next.js frontend, a FastAPI backend, and a LangGraph automation layer.
 
 ## What We're Building
 
-AI Dictionary is an intelligent content platform that combines automated AI news aggregation with a clean, developer-friendly interface. The platform leverages LangGraph agents to generate summaries and titles, pulls trending AI tools from Product Hunt, and presents everything through a modern blog system with dynamic routing and syntax-highlighted code examples.
+AI Dictionary is an AI knowledge platform that combines automated content ingestion with a clean, developer-friendly interface. The platform now pulls from multiple live sources including Product Hunt, NewsAPI, MarkTechPost, and research/scraping workflows, then uses LangGraph agents to generate summaries, titles, slugs, and structured content for publishing. The frontend currently exposes 6 public routes and a richer blog system with dynamic routing, syntax-highlighted code blocks, and reusable content blocks.
 
 ### Core Features
 
@@ -141,12 +141,20 @@ pnpm start
 
 ## Development Status
 
+**Current Snapshot:**
+
+- 3 codebases working together: `frontend/`, `backend/`, and `langgraph_bot/`
+- 6 public frontend routes, including blog list and dynamic blog detail pages
+- 4 active ingestion/research pipelines: Product Hunt, NewsAPI, MarkTechPost, and LangGraph-driven web/PDF research
+- 4 Supabase migrations already captured in the repo
+- Secure cookie-based authentication with centralized user context management
+
 **Completed:**
 
 - ✅ Authentication system with secure cookie-based JWT
 - ✅ Blog platform with dynamic routing and content rendering
-- ✅ AI content generation pipeline with LangGraph
-- ✅ Product Hunt API integration
+- ✅ LangGraph workflows for description, title, slug, and image generation
+- ✅ Product Hunt, NewsAPI, and MarkTechPost integrations
 - ✅ Database layer with Supabase and RLS
 - ✅ Dark/light mode theming
 - ✅ Code syntax highlighting
@@ -154,8 +162,8 @@ pnpm start
 
 **In Progress:**
 
-- 🔄 Backend integration with frontend
-- 🔄 Automated content pipeline deployment
+- 🔄 Hardening the LangGraph bot workflow and deployment path
+- 🔄 Expanding automated content coverage and source diversity
 - 🔄 User dashboard and personalization
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.

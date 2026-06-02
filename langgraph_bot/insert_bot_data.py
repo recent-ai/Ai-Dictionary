@@ -22,7 +22,11 @@ def insert_cleaned_data(posts: list):
             }
 
             supabase.table("posts").insert(post_data).execute()
-
+            
+            image_data = post.get("generated_image")
+            supabase.storage.from_("post-images").upload(f"{post_id}.jpg", image_data, {"content_type": "image/jpeg"})
+            
+            image_url = supabase.storage.from_("post-images").get_public_url(f"{post_id}.jpg")
             content_data = {
                 "postid": post_id,
                 "content": {
@@ -30,6 +34,7 @@ def insert_cleaned_data(posts: list):
                     "summary": post.get("summary"),
                     "description": post.get("description"),
                     "slug": post.get("slug"),
+                    "generated_image": image_url
                 },
                 "isoldpost": False,
             }
