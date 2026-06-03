@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+// @ts-expect-error CSS import handled by Next.js
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthContext";
 import Navbar from "@/components/Navbar";

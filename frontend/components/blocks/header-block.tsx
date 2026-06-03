@@ -69,7 +69,7 @@ export function TitleComponent({
 							<Calendar className="w-4 h-4" /> {date}
 						</span>
 						<span className="flex items-center gap-2">
-							<Clock className="w-4 h-4" /> {estimated_time} read
+							<Clock className="w-4 h-4" /> {estimated_time}
 						</span>
 						<span className="flex items-center gap-2">
 							<BarChart2 className="w-4 h-4" /> {difficulty || "intermediate"}
