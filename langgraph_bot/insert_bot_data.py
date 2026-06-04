@@ -31,7 +31,7 @@ def insert_cleaned_data(posts: list):
             
                     image_url = supabase.storage.from_("post-images").get_public_url(f"{post_id}.jpg")
             except Exception as e:
-                supabase.table("posts").delete().eq("post_id",post_id).execute()
+                supabase.table("posts").delete().eq("postid",post_id).execute()
                 raise
             
         

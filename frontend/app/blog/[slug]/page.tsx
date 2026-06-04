@@ -19,7 +19,10 @@ export default async function BlogPostPage({ params }: PageProps) {
 		notFound();
 	}
 
-	const titleBlock = post.blocks.find((block) => block.type === "title");
+	const titleBlock = post.blocks.find(  
+		(block): block is Extract<typeof block, { type: "title" }> =>  
+			block.type === "title",  
+	);  
 	const postTitle = titleBlock?.data.content ?? "Blog Post";
 
 	return (
