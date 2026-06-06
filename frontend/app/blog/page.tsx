@@ -37,7 +37,8 @@ export default async function BlogListingPage() {
 	try {
 		posts = await getBlogPosts();
 	} catch (error) {
-		loadError = error instanceof Error ? error.message : "Unable to load blog posts.";
+		loadError =
+			error instanceof Error ? error.message : "Unable to load blog posts.";
 	}
 
 	const allPosts = loadError ? [] : posts.map(getPostMetadata);

@@ -33,9 +33,11 @@ def generate_image(state: State):
             },
             timeout=60
         )
-        if response.status_code != 200:
-            # print(f"Error occured during Image Generation {response.status_code} - {response.content}")
-            raise Exception(f"Error occured during Image Generation {response.status_code} - {response.content}")
+        content_type = response.headers.get("Content-Type", "")
+        if response.status_code != 200 or not content_type.startswith("image/"):
+            raise Exception(
+                f"Error occured during Image Generation {response.status_code} - {content_type}"
+            )
         return {"generated_image": response.content}
     except Exception as e:
         print(f"Exception occured {e}")
