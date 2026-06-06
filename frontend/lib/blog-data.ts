@@ -124,7 +124,7 @@ function mapRowToBlogPost(row: {
 	};
 }
 
-export async function getBlogPosts() {
+export async function getBlogPosts(): Promise<BlogPost[]> {
 	const supabase = await createClient();
 
 	const { data, error } = await supabase
@@ -147,7 +147,7 @@ export async function getBlogPosts() {
 
 	if (error) {
 		console.error("Failed to fetch blog posts", error);
-		return [];
+		throw new Error("Unable to load blog posts.");
 	}
 
 	return (data ?? [])

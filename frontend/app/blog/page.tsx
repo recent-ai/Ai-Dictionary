@@ -7,7 +7,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { getBlogPosts } from "@/lib/blog-data";
-import { ArrowRight, BookOpen, Calendar } from "lucide-react";
+import { ArrowRight, BookOpen, Calendar, TriangleAlert } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -31,8 +31,16 @@ function getPostMetadata(
 }
 
 export default async function BlogListingPage() {
-	const posts = await getBlogPosts();
-	const allPosts = posts.map(getPostMetadata);
+	let posts = [] as Awaited<ReturnType<typeof getBlogPosts>>;
+	let loadError: string | null = null;
+
+	try {
+		posts = await getBlogPosts();
+	} catch (error) {
+		loadError = error instanceof Error ? error.message : "Unable to load blog posts.";
+	}
+
+	const allPosts = loadError ? [] : posts.map(getPostMetadata);
 
 	return (
 		<div className="min-h-screen bg-background text-foreground relative overflow-hidden pb-20">
@@ -52,13 +60,42 @@ export default async function BlogListingPage() {
 				</div>
 			</section>
 			<main className="container mx-auto px-6 md:px-12 z-10 relative mt-12">
-				{allPosts.length > 0 ? (
+				{loadError ? (
+					<div
+						role="alert"
+						aria-live="assertive"
+						className="mx-auto flex max-w-2xl flex-col gap-6 rounded-3xl border border-destructive/30 bg-destructive/10 p-8 shadow-lg shadow-destructive/5"
+					>
+						<div className="flex items-start gap-4">
+							<div className="rounded-2xl bg-destructive/15 p-3 text-destructive">
+								<TriangleAlert className="h-6 w-6" />
+							</div>
+							<div className="space-y-3">
+								<Badge variant="destructive" className="w-fit">
+									Unavailable
+								</Badge>
+								<div className="space-y-2">
+									<h2 className="text-2xl font-bold tracking-tight">
+										Blog feed unavailable
+									</h2>
+									<p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+										We could not load blog posts from the database. This is a
+										service issue, not an empty result set.
+									</p>
+								</div>
+								<p className="text-xs font-medium uppercase tracking-[0.24em] text-destructive/80">
+									{loadError}
+								</p>
+							</div>
+						</div>
+					</div>
+				) : allPosts.length > 0 ? (
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{allPosts.map((post) => (
 							<Link
 								key={post.slug}
 								href={`/blog/${post.slug}`}
-								className="group outline-none"
+								className="group outline-none rounded-xl focus-visible:ring-ring/50 focus-visible:ring-[3px]"
 							>
 								<Card className="h-full flex flex-col border-border/40 bg-card/10 backdrop-blur-md overflow-hidden hover:bg-card/20 transition-all duration-500 hover:shadow-[0_0_30px_-5px_rgba(0,0,0,0)] hover:shadow-primary/20 group-hover:-translate-y-1 hover:border-primary/40 relative">
 									{/* Glow Effect on Hover */}
