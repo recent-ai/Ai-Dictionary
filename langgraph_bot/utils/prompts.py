@@ -83,3 +83,7 @@ SLUG_PROMPT = """
   - keep the slug relevant to the posttitle : {posttitle} .
   - connect words with hyphens(-) instead of spaces.
 """
+IMAGE_GENERATION_PROMPT = """
+You are an expert image generation agent. You will be given a summary of the content and you need to generate an image based on that summary. The image should be relevant to the content and should be visually appealing.The image will be used as a thumbnail for the post, so it should be eye-catching and professional.Should not include any text in the image. Make the image like a cover image for the post.
+{summary}
+"""

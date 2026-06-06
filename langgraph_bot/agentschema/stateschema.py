@@ -50,3 +50,4 @@ class State(TypedDict):
     data: Annotated[Optional[str], replace_reducer]
     tavily_search_result: Annotated[Optional[str], replace_reducer]
     code: Annotated[Optional[str], replace_reducer]
+    generated_image: Annotated[Optional[bytes], replace_reducer]
