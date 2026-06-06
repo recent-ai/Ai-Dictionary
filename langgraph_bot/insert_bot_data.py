@@ -11,6 +11,7 @@ def insert_cleaned_data(posts: list):
     for post in posts:
         try:
             post_id = str(uuid.uuid4())
+            uploaded_image_path = None  # track in outer scope so both handlers can reference it
 
             post_data = {
                 "postid": post_id,
@@ -22,19 +23,25 @@ def insert_cleaned_data(posts: list):
             }
 
             supabase.table("posts").insert(post_data).execute()
+
             image_url = None
             try:
                 image_data = post.get("generated_image")
-                
+
                 if image_data:
-                    supabase.storage.from_("post-images").upload(f"{post_id}.jpg", image_data, {"content_type": "image/jpeg"})
-            
-                    image_url = supabase.storage.from_("post-images").get_public_url(f"{post_id}.jpg")
-            except Exception as e:
-                supabase.table("posts").delete().eq("postid",post_id).execute()
+                    uploaded_image_path = f"{post_id}.jpg"
+                    supabase.storage.from_("post-images").upload(
+                        uploaded_image_path, image_data, {"content_type": "image/jpeg"}
+                    )
+                    image_url = supabase.storage.from_("post-images").get_public_url(uploaded_image_path)
+
+            except Exception:
+                # rollback: remove image if uploaded and delete post row if image upload fails
+                if uploaded_image_path:
+                    supabase.storage.from_("post-images").remove([uploaded_image_path])
+                supabase.table("posts").delete().eq("postid", post_id).execute()
                 raise
-            
-        
+
             content_data = {
                 "postid": post_id,
                 "content": {
@@ -42,7 +49,7 @@ def insert_cleaned_data(posts: list):
                     "summary": post.get("summary"),
                     "description": post.get("description"),
                     "slug": post.get("slug"),
-                    "generated_image": image_url
+                    "generated_image": image_url,
                 },
                 "isoldpost": False,
             }
@@ -50,7 +57,9 @@ def insert_cleaned_data(posts: list):
             try:
                 supabase.table("post_content").insert(content_data).execute()
             except Exception:
-                # compensate to keep consistency if content insert fails
+                # rollback: remove image and post row if content insert fails
+                if uploaded_image_path:
+                    supabase.storage.from_("post-images").remove([uploaded_image_path])
                 supabase.table("posts").delete().eq("postid", post_id).execute()
                 raise
 
