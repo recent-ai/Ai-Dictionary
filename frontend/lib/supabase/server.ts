@@ -20,10 +20,12 @@ export async function createClient() {
 						cookiesToSet.forEach(({ name, value, options }) =>
 							cookieStore.set(name, value, options),
 						);
-					} catch {
+					} catch(error) {
 						// The `setAll` method was called from a Server Component.
 						// This can be ignored if you have proxy refreshing
 						// user sessions.
+						// Log for debugging in case this hides unexpected errors
+						console.warn("Failed to set cookies (may be called from Server Component):", error);
 					}
 				},
 			},
