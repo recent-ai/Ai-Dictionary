@@ -5,6 +5,24 @@ All notable changes to the AI-Dictionary project will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+### June 7,2026
+
+#### Added
+
+- **Skeleton Loading Components**
+  - New `Skeleton` UI component (`frontend/components/ui/skeleton.tsx`) with pulsing animation and muted background styling
+  - New `BlogPostLoading` component (`frontend/app/blog/[slug]/loading.tsx`) for single blog post loading state with skeleton placeholders for navigation, title/meta sections, and content blocks
+  - New `BlogListingLoading` component (`frontend/app/blog/loading.tsx`) for blog list loading state with skeleton placeholders for hero section and responsive grid of blog cards
+  - New `Loading` component (`frontend/components/loading/loading.tsx`) for generic loading state
+
+#### Changed
+- **README.md**: Updated LLM tech stack information
+
+#### Updated
+- **Dependencies**: Bumped `baseline-browser-mapping` from `^2.8.32` to `^2.10.34` in `frontend/package.json`
+
+
+<!-- end of auto-generated comment: release notes by coderabbit.ai -->
 ### March 26, 2026
 
 #### Added
