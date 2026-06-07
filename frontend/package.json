@@ -37,7 +37,7 @@
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
-		"baseline-browser-mapping": "^2.8.32",
+		"baseline-browser-mapping": "^2.10.34",
 		"eslint-config-next": "16.0.1",
 		"shiki": "^3.19.0",
 		"tailwindcss": "^4",
