@@ -30,6 +30,16 @@ def replace_dict_reducer(current: Optional[dict], new: Optional[dict]) -> dict:
     return {}
 
 
+def replace_bytes_or_none_reducer(
+    current: Optional[bytes], new: Optional[bytes]
+) -> Optional[bytes]:
+    if new is not None:
+        return new
+    if current is not None:
+        return current
+    return None
+
+
 class State(TypedDict):
     # If you want to keep history of strings, use operator.add
     # If you just want the current value, use 'overwrite'
@@ -50,4 +60,4 @@ class State(TypedDict):
     data: Annotated[Optional[str], replace_reducer]
     tavily_search_result: Annotated[Optional[str], replace_reducer]
     code: Annotated[Optional[str], replace_reducer]
-    generated_image: Annotated[Optional[bytes], replace_reducer]
+    generated_image: Annotated[Optional[bytes], replace_bytes_or_none_reducer]

@@ -44,7 +44,7 @@ AI Dictionary is an AI knowledge platform that combines automated content ingest
 **Frontend:** Next.js 16 · TypeScript · TailwindCSS · Framer Motion  
 **Backend:** Python 3.12 · FastAPI · fastapi-users · LangGraph · LangChain  
 **Database:** PostgreSQL (Supabase) with RLS  
-**AI/LLM:** Google Gemini · OpenAI GPT-4 · Groq  
+**AI/LLM:** Google Gemini · Groq  
 **Dev Tools:** uv (package manager) · Ruff (backend only) · Pre-commit hooks · TypeScript strict mode
 
 > **Note:** _Ruff linting and formatting is currently enabled for the `backend/` folder only. LangGraph bot integration coming soon._
