@@ -87,6 +87,7 @@ jobs:
           LANGSMITH_ENDPOINT: ${{ secrets.LANGSMITH_ENDPOINT }}
           LANGCHAIN_TRACING_V2: ${{ secrets.LANGCHAIN_TRACING_V2 }}
           LANGCHAIN_PROJECT: ${{ secrets.LANGCHAIN_PROJECT }}
+          POLLINATIONS_SECRET_KEY: ${{secrets.POLLINATIONS_SECRET_KEY }}
         run: |
           cd langgraph_bot
           source .venv/bin/activate
