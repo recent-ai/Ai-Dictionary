@@ -3,6 +3,14 @@
 Runs every Tier 1 (trigger) adapter, collects their `RawData` items, and upserts them
 into `raw_api_data` with `status='pending'`. Tier 2 (context) sources — Latent Space,
 Import AI, etc. — are NOT here; they're wired into the agent's research tools later.
+
+Usage (from the repo root):
+
+    python -m backend.services.ingestion.runner
+
+Run it as a module, not as a file path. The adapter imports below are relative, so
+`python backend/services/ingestion/runner.py` puts the script's own directory on
+sys.path instead of the repo root and the imports fail.
 """
 
 import logging

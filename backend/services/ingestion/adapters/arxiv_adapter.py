@@ -1,11 +1,11 @@
 from ..base import SourceAdapter, RawData
-import feedparser
+from ..feed_utils import entry_title_link, fetch_feed
 import logging
 
 logger = logging.getLogger(__name__)
 
 ARXIV_CATEGORIES = ["cs.AI", "cs.LG"]
-MAX_PER_CATEGORY = 25
+MAX_PER_CATEGORY = 10
 
 _API_BASE = "https://export.arxiv.org/api/query"
 
@@ -23,7 +23,9 @@ class ArxivAdapter(SourceAdapter):
                 f"&sortBy=submittedDate&sortOrder=descending"
                 f"&max_results={MAX_PER_CATEGORY}"
             )
-            feed = feedparser.parse(url)
+            feed = fetch_feed(url)
+            if feed is None:
+                continue
 
             # `bozo` is only a warning (content-type/encoding quibbles); a valid feed
             # can trip it and still parse. Only NO entries is a real failure.
@@ -34,11 +36,15 @@ class ArxivAdapter(SourceAdapter):
                 )
                 continue
             for entry in feed.entries:
+                pair = entry_title_link(entry)
+                if pair is None:
+                    continue
+                title, link = pair
                 items.append(
                     RawData(
-                        title=entry.title,
+                        title=title,
                         description=entry.get("summary", ""),
-                        source_url=entry.link,
+                        source_url=link,
                         source_name=f"Arxiv ({category})",
                         source_type=self.source_type,
                     )

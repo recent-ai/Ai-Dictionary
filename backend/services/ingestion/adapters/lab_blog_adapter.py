@@ -1,7 +1,8 @@
 from ..base import SourceAdapter, RawData
-import feedparser
+from ..feed_utils import entry_title_link, fetch_feed
 import logging
 from datetime import datetime, timezone, timedelta
+from email.utils import parsedate_to_datetime
 
 logger = logging.getLogger(__name__)
 
@@ -23,24 +24,50 @@ def _extract_content(entry) -> str | None:
     return None
 
 
-def _entry_published(entry) -> datetime | None:
-    """Parse feedparser's published_parsed (UTC struct_time) to a tz-aware datetime."""
-    t = (
-        entry.get("published_parsed")
-        or entry.get("updated_parsed")
-        or entry.get("published")
-    )
-    if t is None:
-        return None
+def _parse_date_string(raw: str) -> datetime | None:
+    """Parse a raw feed date string (RFC 2822 for RSS, ISO-8601 for Atom)."""
     try:
-        return datetime(*t[:6], tzinfo=timezone.utc)
+        return parsedate_to_datetime(raw)
+    except Exception:
+        pass
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00"))
     except Exception:
         return None
 
 
+def _entry_published(entry) -> datetime | None:
+    """Best-effort publish time for an entry, as a tz-aware UTC datetime."""
+    for key in ("published_parsed", "updated_parsed"):
+        tim = entry.get(key)
+        if tim:
+            try:
+                return datetime(
+                    tim[0], tim[1], tim[2], tim[3], tim[4], tim[5], tzinfo=timezone.utc
+                )
+            except Exception:
+                pass
+
+    for key in ("published", "updated"):
+        raw = entry.get(key)
+        if not raw:
+            continue
+        parsed = _parse_date_string(raw)
+        if parsed is None:
+            continue
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+
+    return None
+
+
 LAB_FEEDS = {
     "OpenAI": "https://openai.com/news/rss.xml",
-    "Anthropic": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_engineering.xml",
+    # Anthropic publishes no official RSS feed. This is a third-party mirror, so it
+    # is attributed to its maintainer rather than to Anthropic — anything it ships
+    # gets persisted under this name, and we don't vouch for it as an Anthropic source.
+    "Anthropic Engineering (unofficial mirror by Olshansk)": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_engineering.xml",
     "Hugging Face": "https://huggingface.co/blog/feed.xml",
     "Google DeepMind": "https://deepmind.google/blog/rss.xml",
     "Apple ML Research": "https://machinelearning.apple.com/rss.xml",
@@ -60,7 +87,9 @@ class LabBlogAdapter(SourceAdapter):
         cutoff = datetime.now(timezone.utc) - timedelta(days=LOOKBACK_DAYS)
 
         for lab_name, feed_url in LAB_FEEDS.items():
-            feed = feedparser.parse(feed_url)
+            feed = fetch_feed(feed_url)
+            if feed is None:
+                continue
             # `bozo` is only a warning flag — many valid feeds trip it over a cosmetic
             # content-type (text/plain) or a declared-vs-actual encoding mismatch, yet
             # still parse fine. Only treat NO entries as a real failure.
@@ -81,11 +110,15 @@ class LabBlogAdapter(SourceAdapter):
                 # If we can, skip anything older than the cutoff.
                 if published is not None and published < cutoff:
                     continue
+                pair = entry_title_link(entry)
+                if pair is None:
+                    continue
+                title, link = pair
                 items.append(
                     RawData(
-                        title=entry.title,
+                        title=title,
                         description=entry.get("summary", ""),
-                        source_url=entry.link,
+                        source_url=link,
                         source_name=lab_name,
                         source_type=self.source_type,
                         content=_extract_content(entry),
