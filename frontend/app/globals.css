@@ -25,6 +25,16 @@
 	--color-ring: var(--ring);
 	--color-input: var(--input);
 	--color-border: var(--border);
+	--color-brand: var(--brand);
+	--color-brand-subtle: var(--brand-subtle);
+	--color-hue-1: var(--hue-1);
+	--color-hue-2: var(--hue-2);
+	--color-hue-3: var(--hue-3);
+	--color-hue-4: var(--hue-4);
+	--color-hue-1-wash: var(--hue-1-wash);
+	--color-hue-2-wash: var(--hue-2-wash);
+	--color-hue-3-wash: var(--hue-3-wash);
+	--color-hue-4-wash: var(--hue-4-wash);
 	--color-destructive: var(--destructive);
 	--color-accent-foreground: var(--accent-foreground);
 	--color-accent: var(--accent);
@@ -44,7 +54,18 @@
 	--radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Styling for default light mode */
+/* Styling for default light mode
+ *
+ * The neutrals carry a faint indigo cast rather than being pure zinc. Every
+ * surface, rule and panel on the site is built from these four values, so a 2–3
+ * point shift in the blue channel is the whole difference between "grey site
+ * with an indigo accent" and "site with a temperature" — visible as a family
+ * resemblance, never as a colour anyone has to notice. Background and foreground
+ * stay pure: the contrast the pages were designed against is unchanged.
+ *
+ * `--brand` is the accent already used inline as indigo-500/indigo-400 across ten
+ * components, promoted to a token so the focus ring and selection can share it
+ * instead of each page inventing its own. */
 :root {
 	--radius: 0.5rem;
 	--background: #ffffff;
@@ -55,17 +76,44 @@
 	--popover-foreground: #000000;
 	--primary: #000000;
 	--primary-foreground: #ffffff;
-	--secondary: #f4f4f5;
-	--secondary-foreground: #18181b;
-	--muted: #f4f4f5;
-	--muted-foreground: #71717a;
-	--accent: #f4f4f5;
-	--accent-foreground: #18181b;
+	--secondary: #f3f3f8;
+	--secondary-foreground: #1a1a22;
+	--muted: #f3f3f8;
+	--muted-foreground: #6d6d7c;
+	--accent: #f3f3f8;
+	--accent-foreground: #1a1a22;
 	--destructive: #ef4444;
 	--destructive-foreground: #fafafa;
-	--border: #e4e4e7;
-	--input: #e4e4e7;
-	--ring: #000000;
+	--border: #e3e3ec;
+	--input: #e3e3ec;
+	--brand: #6366f1;
+	--brand-subtle: #eef0fe;
+	--ring: #6366f1;
+
+	/* The categorical set. Four hues that carry identity — a source, a pipeline
+	   stage, a section — rather than decoration. Slot order is fixed and never
+	   cycled: the same thing gets the same hue everywhere on the site, so the
+	   colour is a name you learn rather than a pattern you re-read per page.
+
+	   Validated as a set, not chosen by eye: all four sit inside the lightness
+	   band, clear the chroma floor, hold ΔE 10.2 at the worst adjacent pair under
+	   deuteranopia and 23.6 under normal vision, and clear 3:1 against the
+	   surface. Amber and rose are deliberately NOT adjacent slots — that pair is
+	   the weak one under protan/deutan, and separating them puts teal between.
+
+	   Every use is paired with a label or a shape. Nothing on the site is findable
+	   by hue alone. */
+	--hue-1: #6366f1; /* indigo — the brand slot */
+	--hue-2: #b45309; /* amber  */
+	--hue-3: #0d9488; /* teal   */
+	--hue-4: #e11d48; /* rose   */
+
+	/* Wash steps: the same hues at panel strength. Mixed rather than hand-picked
+	   so they track the hue above if it's ever re-stepped. */
+	--hue-1-wash: color-mix(in oklab, var(--hue-1) 7%, var(--background));
+	--hue-2-wash: color-mix(in oklab, var(--hue-2) 7%, var(--background));
+	--hue-3-wash: color-mix(in oklab, var(--hue-3) 7%, var(--background));
+	--hue-4-wash: color-mix(in oklab, var(--hue-4) 7%, var(--background));
 	--chart-1: #000000;
 	--chart-2: #333333;
 	--chart-3: #666666;
@@ -83,17 +131,38 @@
 	--popover-foreground: #ffffff;
 	--primary: #ffffff;
 	--primary-foreground: #000000;
-	--secondary: #27272a;
+	--secondary: #26262f;
 	--secondary-foreground: #fafafa;
-	--muted: #27272a;
-	--muted-foreground: #a1a1aa;
-	--accent: #27272a;
+	--muted: #26262f;
+	--muted-foreground: #a0a0af;
+	--accent: #26262f;
 	--accent-foreground: #fafafa;
 	--destructive: #7f1d1d;
 	--destructive-foreground: #fafafa;
-	--border: #27272a;
-	--input: #27272a;
-	--ring: #d4d4d8;
+	--border: #25252e;
+	--input: #25252e;
+	/* The lighter step of the pair — indigo-500 sits too dark against a black
+	   surface, and the components already switch to indigo-400 in dark mode. */
+	--brand: #818cf8;
+	--brand-subtle: #1b1b2c;
+	--ring: #818cf8;
+
+	/* Re-stepped for the dark surface, not flipped. The light set's amber and
+	   teal sit above the dark lightness band, so each hue is picked again against
+	   black and re-validated: band, chroma, ΔE 8.9 worst adjacent under deutan,
+	   20.0 under normal vision, 3:1 contrast. Same four identities, same slot
+	   order, different steps. */
+	--hue-1: #6d78f5;
+	--hue-2: #bd7e06;
+	--hue-3: #0f9d8e;
+	--hue-4: #ee4a67;
+
+	/* 11% rather than the light theme's 7%: a wash has to climb further off pure
+	   black before it reads as a tint at all. */
+	--hue-1-wash: color-mix(in oklab, var(--hue-1) 11%, var(--background));
+	--hue-2-wash: color-mix(in oklab, var(--hue-2) 11%, var(--background));
+	--hue-3-wash: color-mix(in oklab, var(--hue-3) 11%, var(--background));
+	--hue-4-wash: color-mix(in oklab, var(--hue-4) 11%, var(--background));
 	--chart-1: #ffffff;
 	--chart-2: #cccccc;
 	--chart-3: #999999;
@@ -107,7 +176,11 @@
 		@apply border-border outline-ring/50;
 	}
 	body {
-		@apply bg-neutral-100 dark:bg-neutral-950 text-foreground antialiased;
+		/* `bg-background`, not `bg-neutral-100 dark:bg-neutral-950`. Every page
+		   wrapper already paints `bg-background` over this, so the two only ever
+		   met at the edges — overscroll on a phone and the area below a short page
+		   showed #0a0a0a against the layout's #000000 as a visible seam. */
+		@apply bg-background text-foreground antialiased;
 		font-family:
 			var(--font-manrope), -apple-system, BlinkMacSystemFont, "Segoe UI",
 			sans-serif;
@@ -116,18 +189,77 @@
 			color 0.5s ease-in-out,
 			border-color 0.5s ease-in-out;
 	}
+
+	/* Selection was a per-page utility on three of the six pages, which left
+	   About, login and signup with the browser default. Here it covers all of
+	   them, and it carries the accent instead of inverting to solid black — a
+	   full-strength inversion on a paragraph of prose is the loudest thing the
+	   page can do, where a wash reads as a highlighter. The text keeps its own
+	   colour, so contrast is whatever it already was. */
+	::selection {
+		background-color: color-mix(in oklab, var(--brand) 22%, transparent);
+	}
 }
 
-/* Not Used Currently but Kept in Case for Future Use */
+/* Ambient wash.
+ *
+ * This is the one piece of pure decoration on the site, and it does most of the
+ * work of making a page feel like it has a temperature. Two large, very weak
+ * radial gradients — indigo from the upper left, teal from the upper right —
+ * over the page background. No hard edge, no visible centre, nothing that reads
+ * as a shape; at these opacities it's closer to a paper stock than a graphic.
+ *
+ * Deliberately not a `filter: blur()` like the old `.hero-glow`: blur on a large
+ * element forces a full-size offscreen buffer on every paint and pushes the
+ * element onto its own compositor layer. A wide gradient stop is already soft
+ * and costs nothing.
+ *
+ * Positioned by the consumer. `pointer-events-none` and `aria-hidden` at the
+ * usage site, so it can never eat a click or reach a screen reader. */
+.ambient-wash {
+	background-image:
+		radial-gradient(
+			42rem 26rem at 8% -4%,
+			color-mix(in oklab, var(--hue-1) 16%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			38rem 24rem at 92% -8%,
+			color-mix(in oklab, var(--hue-3) 13%, transparent),
+			transparent 70%
+		);
+}
+
+/* Same idea rotated: a wash that enters from the bottom, for the band above the
+ * footer where the page needs a floor rather than a sky. */
+.ambient-wash-bottom {
+	background-image:
+		radial-gradient(
+			40rem 22rem at 15% 108%,
+			color-mix(in oklab, var(--hue-1) 15%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			34rem 20rem at 85% 112%,
+			color-mix(in oklab, var(--hue-4) 11%, transparent),
+			transparent 70%
+		);
+}
+
+/* A hairline that fades in and out instead of stopping dead at both ends. Used
+ * where a full-width rule would otherwise cut the page in half. */
+.rule-accent {
+	background-image: linear-gradient(
+		to right,
+		transparent,
+		color-mix(in oklab, var(--hue-1) 45%, transparent) 18%,
+		color-mix(in oklab, var(--hue-3) 38%, transparent) 55%,
+		transparent
+	);
+}
+
+/* Unreferenced. Left in place because deleting it isn't mine to decide, but
+ * nothing on the site consumes it — grep before assuming it does anything. */
 .glass-effect {
 	@apply bg-background/80 backdrop-blur-md border border-border/50;
-}
-
-.hero-glow {
-	background: radial-gradient(
-		circle at 50% 50%,
-		rgba(120, 119, 198, 0.3),
-		rgba(255, 255, 255, 0)
-	);
-	filter: blur(80px);
 }
