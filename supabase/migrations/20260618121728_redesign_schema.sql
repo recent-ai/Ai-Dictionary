@@ -24,6 +24,26 @@ ALTER Table raw_api_data
 -- title. Website uniqueness is kept.
 Alter Table raw_api_data Drop Constraint If Exists raw_api_data_title_key;
 
+-- Settle the pre-queue backlog before anything can claim it.
+--
+-- The status column above defaults to 'pending', so without this every row already in
+-- the table becomes claimable and claim_pending_raw_items hands the whole archive back
+-- to the generator, oldest first. Those articles were already consumed by the old
+-- date-range fetch (fetch_last_days_posts), which recorded nothing about what it had
+-- processed - there is no column, timestamp, or join key that marks consumption, so
+-- "everything present when this migration runs" is the only boundary available.
+--
+-- Dedup would not save us: the posts backfilled into posts_v2 below have no embedding,
+-- and match_posts only compares against rows where embedding is not null. Every re-run
+-- item would come back "not a duplicate" and publish a second copy.
+--
+-- 'skipped' rather than 'succeeded' because we are not asserting a post exists, only
+-- that this run loop must not pick it up. To re-open a window, reset it explicitly:
+--     Update raw_api_data Set status = 'pending', last_error = Null
+--     Where status = 'skipped' And last_error = 'pre-queue backlog'
+--       And created_at >= '<cutoff>'::timestamptz;
+Update raw_api_data Set status = 'skipped', last_error = 'pre-queue backlog';
+
 
 Create table posts_v2(
     id  uuid Primary Key Default gen_random_uuid(),
@@ -121,6 +141,12 @@ Create index on posts(slug);
 Create index on posts Using hnsw (embedding vector_cosine_ops);
 
 Create index on raw_api_data(status) where status = 'pending';
+
+-- One post per raw item. claim_pending_raw_items already stops two concurrent runs
+-- from processing the same row; this is the backstop for what it does not cover, such
+-- as a hand-edited status or a replayed insert. Partial because every historical post
+-- backfilled above has raw_item_id NULL and they would otherwise collide.
+Create Unique Index posts_raw_item_id_key On posts(raw_item_id) Where raw_item_id Is Not Null;
 
 
 -- Removing the RPC fundtion

@@ -27,8 +27,11 @@ def _upload_image(
 
     path = f"{post_id}.jpg"
     try:
+        # storage3 merges these options straight into the request headers and pops
+        # "content-type" out for the multipart part. The underscore spelling misses,
+        # so the JPEG uploads as the DEFAULT_FILE_OPTIONS text/plain.
         supabase.storage.from_(BUCKET).upload(
-            path, image_data, {"content_type": "image/jpeg"}
+            path, image_data, {"content-type": "image/jpeg"}
         )
         return supabase.storage.from_(BUCKET).get_public_url(path), path
     except Exception as error:

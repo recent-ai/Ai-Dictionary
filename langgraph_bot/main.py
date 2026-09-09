@@ -8,8 +8,8 @@ a politeness gap; it is not the rate-limit mechanism.
 
 A triage outage is handled here rather than inside ``triage_node``: an isolated
 failure passes one item through, but ``TRIAGE_FAILURE_THRESHOLD`` consecutive
-failures halt the run and release the unprocessed claims back to ``pending``, so a
-broken triage model cannot quietly burn the whole queue.
+failures halt the run, so a broken triage model cannot quietly burn the whole queue.
+Any exit from the drain loop releases the claims it did not settle back to ``pending``.
 """
 
 import logging
@@ -17,6 +17,7 @@ import time
 
 from backend.db.repository.fetch_raw_data import fetch_pending_items, update_status
 from langgraph_bot.insert_bot_data import insert_cleaned_data
+from langgraph_bot.nodes.triage_node import MIN_IMPORTANCE
 
 from .workflow.complete_workflow import mjorgraph, write_complete_graph_png
 from .workflow.description_workflow import write_description_graph_png
@@ -73,8 +74,9 @@ def _skip_reason(result: dict) -> str:
     triage = result.get("triage") or {}
     if not triage.get("is_it_relevant", True):
         return f"triage: {triage.get('reason', 'not relevant')}"
-    if triage.get("importance") is not None:
-        return f"triage: importance {triage['importance']} below threshold"
+    importance = triage.get("importance")
+    if importance is not None and importance < MIN_IMPORTANCE:
+        return f"triage: importance {importance} below threshold {MIN_IMPORTANCE}"
     return "filtered"
 
 
@@ -86,13 +88,16 @@ def _release_claims(items: list[dict]) -> int:
     """
     released = 0
     for item in items:
+        # Read the id up front: this runs from a `finally`, so anything it raises
+        # would replace the exception that is already on its way out.
+        raw_id = item.get("id")
         try:
-            update_status(item["id"], "pending", expected_status="processing")
+            update_status(raw_id, "pending", expected_status="processing")
             released += 1
         except Exception:
             logger.error(
                 "Could not release the claim on %s; it stays in processing",
-                item["id"],
+                raw_id,
                 exc_info=True,
             )
     return released
@@ -109,73 +114,84 @@ def run_entire_flow() -> dict:
         "released": 0,
     }
     consecutive_triage_failures = 0
+    # Index past the last item whose outcome reached the database. Everything from
+    # here on is still `processing`, so every exit path has to hand it back.
+    settled = 0
 
-    for index, post in enumerate(claimed, 1):
-        if consecutive_triage_failures >= TRIAGE_FAILURE_THRESHOLD:
-            # Halt instead of marking the rest `failed`: `failed` is terminal, so that
-            # would silently discard the remainder of the queue over an outage that
-            # says nothing about these items.
-            logger.critical(
-                "Triage failed on %d consecutive items; halting the run and releasing "
-                "the %d unprocessed claim(s)",
-                consecutive_triage_failures,
-                len(claimed) - index + 1,
-            )
-            counts["released"] = _release_claims(claimed[index - 1 :])
-            break
-
-        raw_id = post["id"]
-        title = post.get("title") or "<untitled>"
-        logger.info("[%d/%d] %s", index, counts["total"], title[:80])
-
-        try:
-            result = mjorgraph.invoke(build_initial_state(post))
-
-            if (result.get("triage") or {}).get("available", True):
-                consecutive_triage_failures = 0
-            else:
-                consecutive_triage_failures += 1
-                logger.warning(
-                    "    triage unavailable (%d/%d consecutive)",
-                    consecutive_triage_failures,
-                    TRIAGE_FAILURE_THRESHOLD,
-                )
-
-            if not result.get("should_process"):
-                reason = _skip_reason(result)
-                update_status(
-                    raw_id,
-                    "skipped",
-                    expected_status="processing",
-                    error=reason,
-                )
-                counts["skipped"] += 1
-                logger.info("    skipped - %s", reason)
-                continue
-
-            insert_cleaned_data(result)
-            update_status(raw_id, "succeeded", expected_status="processing")
-            counts["succeeded"] += 1
-            logger.info("    generated -> %s", result.get("slug"))
-            time.sleep(PAUSE_BETWEEN_ITEMS)
-
-        except Exception as error:
-            logger.exception("    failed - %s", error)
-            try:
-                update_status(
-                    raw_id,
-                    "failed",
-                    expected_status="processing",
-                    error=f"{type(error).__name__}: {error}",
-                )
-            except Exception:
+    try:
+        for index, post in enumerate(claimed, 1):
+            if consecutive_triage_failures >= TRIAGE_FAILURE_THRESHOLD:
+                # Halt instead of marking the rest `failed`: `failed` is terminal, so
+                # that would silently discard the remainder of the queue over an outage
+                # that says nothing about these items.
                 logger.critical(
-                    "Could not persist the failed state for raw item %s; stopping the run",
-                    raw_id,
-                    exc_info=True,
+                    "Triage failed on %d consecutive items; halting the run and releasing "
+                    "the %d unprocessed claim(s)",
+                    consecutive_triage_failures,
+                    len(claimed) - settled,
                 )
-                raise
-            counts["failed"] += 1
+                break
+
+            raw_id = post["id"]
+            title = post.get("title") or "<untitled>"
+            logger.info("[%d/%d] %s", index, counts["total"], title[:80])
+
+            try:
+                result = mjorgraph.invoke(build_initial_state(post))
+
+                if (result.get("triage") or {}).get("available", True):
+                    consecutive_triage_failures = 0
+                else:
+                    consecutive_triage_failures += 1
+                    logger.warning(
+                        "    triage unavailable (%d/%d consecutive)",
+                        consecutive_triage_failures,
+                        TRIAGE_FAILURE_THRESHOLD,
+                    )
+
+                if not result.get("should_process"):
+                    reason = _skip_reason(result)
+                    update_status(
+                        raw_id,
+                        "skipped",
+                        expected_status="processing",
+                        error=reason,
+                    )
+                    settled = index
+                    counts["skipped"] += 1
+                    logger.info("    skipped - %s", reason)
+                    continue
+
+                insert_cleaned_data(result)
+                update_status(raw_id, "succeeded", expected_status="processing")
+                settled = index
+                counts["succeeded"] += 1
+                logger.info("    generated -> %s", result.get("slug"))
+                time.sleep(PAUSE_BETWEEN_ITEMS)
+
+            except Exception as error:
+                logger.exception("    failed - %s", error)
+                try:
+                    update_status(
+                        raw_id,
+                        "failed",
+                        expected_status="processing",
+                        error=f"{type(error).__name__}: {error}",
+                    )
+                except Exception:
+                    logger.critical(
+                        "Could not persist the failed state for raw item %s; stopping the run",
+                        raw_id,
+                        exc_info=True,
+                    )
+                    raise
+                settled = index
+                counts["failed"] += 1
+    finally:
+        # Covers the halt, an exception anywhere in the loop (including one raised
+        # outside the inner try), and a KeyboardInterrupt. Items whose outcome is
+        # already recorded are excluded, so this never fights a terminal status.
+        counts["released"] = _release_claims(claimed[settled:])
 
     return counts
 
