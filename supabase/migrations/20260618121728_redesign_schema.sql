@@ -24,6 +24,26 @@ ALTER Table raw_api_data
 -- title. Website uniqueness is kept.
 Alter Table raw_api_data Drop Constraint If Exists raw_api_data_title_key;
 
+-- Settle the pre-queue backlog before anything can claim it.
+--
+-- The status column above defaults to 'pending', so without this every row already in
+-- the table becomes claimable and claim_pending_raw_items hands the whole archive back
+-- to the generator, oldest first. Those articles were already consumed by the old
+-- date-range fetch (fetch_last_days_posts), which recorded nothing about what it had
+-- processed - there is no column, timestamp, or join key that marks consumption, so
+-- "everything present when this migration runs" is the only boundary available.
+--
+-- Dedup would not save us: the posts backfilled into posts_v2 below have no embedding,
+-- and match_posts only compares against rows where embedding is not null. Every re-run
+-- item would come back "not a duplicate" and publish a second copy.
+--
+-- 'skipped' rather than 'succeeded' because we are not asserting a post exists, only
+-- that this run loop must not pick it up. To re-open a window, reset it explicitly:
+--     Update raw_api_data Set status = 'pending', last_error = Null
+--     Where status = 'skipped' And last_error = 'pre-queue backlog'
+--       And created_at >= '<cutoff>'::timestamptz;
+Update raw_api_data Set status = 'skipped', last_error = 'pre-queue backlog';
+
 
 Create table posts_v2(
     id  uuid Primary Key Default gen_random_uuid(),
@@ -38,7 +58,7 @@ Create table posts_v2(
     difficulty text Check( difficulty in ('beginner', 'intermediate','advanced')),
     -- Could be a number for read time in minutes(maybe)
     read_time text,
-    embedding vector(768),        -- Gemini text-embedding-004 (768 dims); powers dedup + related posts
+    embedding vector(768),        -- Gemini gemini-embedding-001 truncated to 768 dims; powers dedup + related posts
     raw_item_id uuid references raw_api_data(id),
     likes_count int Default 0,
     created_at timestamptz Default now(),
@@ -75,6 +95,14 @@ ALTER TABLE posts_v2 ADD CONSTRAINT slug_required_for_new_posts
 CHECK (
     created_at < '2026-06-18'::timestamptz
     OR slug IS NOT NULL
+);
+
+-- Preserve historical rows that may not have a generated description, but reject
+-- NULL, empty, and whitespace-only descriptions for every post created by the redesign.
+ALTER TABLE posts_v2 ADD CONSTRAINT description_required_for_new_posts
+CHECK (
+    created_at < '2026-06-18'::timestamptz
+    OR NULLIF(BTRIM(description), '') IS NOT NULL
 );
 
 Alter table user_liked_posts DROP constraint if exists user_liked_posts_likedpostid_fkey;
@@ -114,6 +142,95 @@ Create index on posts Using hnsw (embedding vector_cosine_ops);
 
 Create index on raw_api_data(status) where status = 'pending';
 
+-- One post per raw item. claim_pending_raw_items already stops two concurrent runs
+-- from processing the same row; this is the backstop for what it does not cover, such
+-- as a hand-edited status or a replayed insert. Partial because every historical post
+-- backfilled above has raw_item_id NULL and they would otherwise collide.
+Create Unique Index posts_raw_item_id_key On posts(raw_item_id) Where raw_item_id Is Not Null;
+
 
 -- Removing the RPC fundtion
 Drop function if exists public.create_post_with_content;
+
+
+Grant Select on table posts to anon;
+Grant Select on table posts to authenticated;
+Grant Select, Insert, Update, Delete on table posts to service_role;
+
+
+-- Atomically claim queue work so overlapping workers cannot process the same item.
+Create Or Replace Function public.claim_pending_raw_items(p_limit integer Default 20)
+Returns Setof public.raw_api_data
+Language plpgsql
+Security Definer
+Set search_path = public
+As $$
+Begin
+    If Coalesce(p_limit, 0) <= 0 Then
+        Return;
+    End If;
+
+    Return Query
+    With candidates As (
+        Select item.id
+        From public.raw_api_data As item
+        Where item.status = 'pending'
+        Order By item.created_at Asc, item.id Asc
+        For Update Skip Locked
+        Limit Least(p_limit, 100)
+    )
+    Update public.raw_api_data As item
+    Set status = 'processing',
+        last_error = Null
+    From candidates
+    Where item.id = candidates.id
+      And item.status = 'pending'
+    Returning item.*;
+End;
+$$;
+
+
+-- Require every terminal update to observe the state established by the claim.
+Create Or Replace Function public.transition_raw_item_status(
+    p_raw_id uuid,
+    p_expected_status text,
+    p_new_status text,
+    p_error text Default Null
+)
+Returns boolean
+Language plpgsql
+Security Definer
+Set search_path = public
+As $$
+Declare
+    updated_rows integer;
+Begin
+    If p_expected_status Not In ('pending', 'processing', 'succeeded', 'skipped', 'failed') Then
+        Raise Exception 'invalid expected raw item status: %', p_expected_status;
+    End If;
+
+    If p_new_status Not In ('pending', 'processing', 'succeeded', 'skipped', 'failed') Then
+        Raise Exception 'invalid new raw item status: %', p_new_status;
+    End If;
+
+    Update public.raw_api_data
+    Set status = p_new_status,
+        last_error = p_error,
+        retry_count = Case
+            When p_new_status = 'failed' Then Coalesce(retry_count, 0) + 1
+            Else retry_count
+        End
+    Where id = p_raw_id
+      And status = p_expected_status;
+
+    Get Diagnostics updated_rows = Row_Count;
+    Return updated_rows = 1;
+End;
+$$;
+
+
+Revoke All On Function public.claim_pending_raw_items(integer) From Public, anon, authenticated;
+Revoke All On Function public.transition_raw_item_status(uuid, text, text, text) From Public, anon, authenticated;
+
+Grant Execute On Function public.claim_pending_raw_items(integer) To service_role;
+Grant Execute On Function public.transition_raw_item_status(uuid, text, text, text) To service_role;
