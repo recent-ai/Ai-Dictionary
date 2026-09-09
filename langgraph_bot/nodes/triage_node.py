@@ -1,12 +1,17 @@
-"""Triage gate — the cheap filter that runs before any expensive generation.
+"""Triage gate - the cheap filter that runs before expensive generation.
 
-One structured Groq call per raw item decides whether it's worth writing a post
-about. Everything downstream (the dedup embedding, ~4 more Groq calls, an image)
-is skipped when this says no, which is the whole point: filtering costs one call,
-generating costs ~8.
+One structured Groq call per raw item decides whether it is worth writing a post.
+Everything downstream is skipped when this says no: filtering costs one call,
+while generating a complete post costs several provider calls.
+
+This node is a pure function of its state. An isolated triage failure passes the item
+through with `triage["available"] = False` so the run loop can see it; deciding when
+repeated failures mean "stop the run" is the loop's job, not this node's, because only
+the loop can halt and release the rest of the claimed batch.
 """
 
 import logging
+from typing import cast
 
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel, Field
@@ -15,7 +20,6 @@ from langgraph_bot.agentschema.stateschema import State
 from langgraph_bot.models.generativemodel import triagemodel
 
 logger = logging.getLogger(__name__)
-
 
 MIN_IMPORTANCE = 2
 
@@ -26,13 +30,12 @@ class TriageResult(BaseModel):
     reason: str
 
 
-
 structured = triagemodel.with_structured_output(TriageResult, method="json_schema")
 
 
 TRIAGE_PROMPT = """
 You are filtering articles for an AI news platform aimed at beginner developers.
-We want concrete, buildable AI developments — NOT generic AI commentary.
+We want concrete, buildable AI developments - NOT generic AI commentary.
 
 Article title: {title}
 Article description: {description}
@@ -60,11 +63,12 @@ def triage_node(state: State) -> dict:
     description = state.get("data") or ""
 
     if not title.strip():
-        # Nothing to classify. Fail CLOSED here (unlike the error path below): an item
-        # with no title gives the generator nothing to work from either.
+        # Fail CLOSED, unlike the error path below: an item with no title gives the
+        # generator nothing to work from either.
         logger.warning("triage_node: item has no title/topic, skipping")
         return {
             "triage": {
+                "available": True,
                 "is_it_relevant": False,
                 "importance": 0,
                 "reason": "no title available to triage",
@@ -73,25 +77,39 @@ def triage_node(state: State) -> dict:
         }
 
     try:
-        result: TriageResult = structured.invoke(
-            [
-                HumanMessage(
-                    content=TRIAGE_PROMPT.format(title=title, description=description)
-                )
-            ],
-            config={
-                "run_name": "triage",
-                "tags": [state.get("name") or "unknown-source"],
-                "metadata": {"raw_id": state.get("raw_id")},
-            },
+        # `with_structured_output` is typed as returning `dict | BaseModel` regardless
+        # of the schema, so the concrete type has to be asserted here.
+        result = cast(
+            TriageResult,
+            structured.invoke(
+                [
+                    HumanMessage(
+                        content=TRIAGE_PROMPT.format(
+                            title=title, description=description
+                        )
+                    )
+                ],
+                config={
+                    "run_name": "triage",
+                    "tags": [state.get("name") or "unknown-source"],
+                    "metadata": {"raw_id": state.get("raw_id")},
+                },
+            ),
         )
-    except Exception as e:
-        logger.error("triage_node: call failed, passing item through: %s", e)
+    except Exception as error:
+        # Pass this one item through, and report the outage to the run loop via
+        # `available`. The loop halts the batch if these start stacking up.
+        logger.warning(
+            "triage_node: call failed, passing item through: %s: %s",
+            type(error).__name__,
+            error,
+        )
         return {
             "triage": {
+                "available": False,
                 "is_it_relevant": True,
                 "importance": MIN_IMPORTANCE,
-                "reason": f"triage unavailable ({type(e).__name__}), passed through",
+                "reason": f"triage unavailable ({type(error).__name__}), passed through",
             },
             "should_process": True,
         }
@@ -105,6 +123,6 @@ def triage_node(state: State) -> dict:
         "process" if should_process else "skip",
     )
     return {
-        "triage": result.model_dump(),
+        "triage": {"available": True, **result.model_dump()},
         "should_process": should_process,
     }

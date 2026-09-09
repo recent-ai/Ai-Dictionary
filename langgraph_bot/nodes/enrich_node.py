@@ -22,15 +22,21 @@ from langgraph_bot.agentschema.stateschema import State
 logger = logging.getLogger(__name__)
 
 VALID_DIFFICULTIES = {"beginner", "intermediate", "advanced"}
-WORDS_PER_MINUTE = 200 
+WORDS_PER_MINUTE = 200
 MAX_TAGS = 6
 
-# the *texts in below code is same as passing elements from function call in a tuple/list, just helps in passing unknown number of arguments which makes it easier and dynamic - earlier I used explicit [state.get("description"), state.get("summary")] = Harsh
+# Varargs because callers pass whichever of description/summary exist, and either can
+# be None — see compute_read_time's two call sites.
 
 
 def _word_count(*texts: str | None) -> int:
-    # there is better way for to find number of words, will add later
-    return sum(len(re.findall(r"\b\w+\b", t)) for t in texts if t)
+    """Count word-like runs across every non-empty text.
+
+    `\\b\\w+\\b` is deliberate rather than `str.split()`: it counts "state-of-the-art"
+    as four words and drops bare punctuation, which tracks reading effort more
+    closely than whitespace splitting does on prose with markdown and code spans.
+    """
+    return sum(len(re.findall(r"\b\w+\b", text)) for text in texts if text)
 
 
 def compute_read_time(*texts: str | None) -> str:

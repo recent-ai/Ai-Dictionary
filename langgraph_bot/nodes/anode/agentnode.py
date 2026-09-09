@@ -1,7 +1,12 @@
+import logging
+
 from langchain_core.messages import AIMessage, HumanMessage
+
 from langgraph_bot.agents.description_agent import agent
 from langgraph_bot.agents.summaryagent import s_agent
 from langgraph_bot.agentschema.stateschema import State
+
+logger = logging.getLogger(__name__)
 
 # The description agent gets the article body when we have it. Bodies can be very
 # long (a full lab blog post or a paper abstract page); truncate so one item can't
@@ -19,22 +24,21 @@ def summary_agent_node(state: State):
     """
     response = s_agent.invoke({"messages": [HumanMessage(content=last_message)]})
 
-    # If agent returns dict with messages then extract them
     if isinstance(response, dict) and "messages" in response:
-        summary = response["messages"][-1].content
-        return {"messages": response["messages"], "summary": summary}
+        messages = response["messages"]
+        if not messages:
+            raise RuntimeError("summary agent returned an empty messages list")
+        return {"messages": messages, "summary": messages[-1].content}
+
     summary = response.content if hasattr(response, "content") else str(response)
     return {"messages": [response], "summary": summary}
 
 
 def _primary_source(state: State) -> str:
-    """The best article text we have, in order of quality.
+    """Return the best article text available.
 
-    `content` is the real article body (RSS content:encoded, persisted to
-    `raw_api_data.content` by the ingestion layer). When present it is far richer
-    than `data`, which is just the feed blurb. Preferring it explicitly is what stops
-    a post from being written off a two-line summary — the agent used to only *hope*
-    it would call a scraper tool.
+    ``content`` is the persisted article body. It is richer than ``data``, which is
+    normally only the feed blurb, but is truncated to protect the context budget.
     """
     body = state.get("content")
     if body:
@@ -53,30 +57,46 @@ def description_agent_node(state: State):
     Additional context from a web search:
     {state.get("tavily_search_result")}
 
-    The source article is the primary material — the search results are supporting
+    The source article is the primary material - the search results are supporting
     context only. Provide a detailed, well-structured description.
     """
 
     try:
         response = agent.invoke({"messages": [HumanMessage(content=last_message)]})
+
         if isinstance(response, dict) and "messages" in response:
+            messages = response["messages"]
+            if not messages:
+                logger.error("description agent returned an empty messages list")
+                return {}
+
+            description = messages[-1].content
+            if not isinstance(description, str) or not description.strip():
+                logger.error("description agent returned empty message content")
+                return {}
+
             return {
-                "messages": response["messages"],
-                "description": response["messages"][-1].content,
+                "messages": messages,
+                "description": description,
             }
+
         if response is not None:
             description = (
                 response.content if hasattr(response, "content") else str(response)
             )
+            if not isinstance(description, str) or not description.strip():
+                logger.error("description agent returned empty content")
+                return {}
             return {"messages": [response], "description": description}
-        # Returning None from a node is an error in LangGraph; return an empty update
-        # and let the caller notice `description` is missing.
+
+        logger.error("description agent returned no response")
         return {}
-    except Exception as e:
+    except Exception as error:
+        logger.exception("description agent invocation failed")
         return {
             "messages": [
                 AIMessage(
-                    content=f"the agent can not perform this action due to error {e}"
+                    content=f"the agent can not perform this action due to error {error}"
                 )
             ],
         }
