@@ -44,6 +44,37 @@ def _post_exists(post_id: str) -> bool:
     return bool(response.data)
 
 
+def _discard_image(uploaded_path: str | None) -> None:
+    """Drop an image this call uploaded but is not going to use."""
+    if not uploaded_path:
+        return
+    try:
+        supabase.storage.from_(BUCKET).remove([uploaded_path])
+    except Exception as cleanup_error:
+        logger.error("Image rollback failed for %s: %s", uploaded_path, cleanup_error)
+
+
+def _existing_post_id(post_id: str, raw_item_id: str | None) -> str | None:
+    """Return the id of the post covering this raw item, ours or an earlier run's.
+
+    Querying by raw_item_id answers both "did my insert land" and "did an earlier
+    attempt already publish this item" in one read. `_post_exists` alone cannot
+    answer the second: post_id is freshly generated on every call, so a replay
+    always looks like a row that is simply absent.
+    """
+    if raw_item_id:
+        response = (
+            supabase.table("posts")
+            .select("id")
+            .eq("raw_item_id", raw_item_id)
+            .limit(1)
+            .execute()
+        )
+        rows = response.data or []
+        return rows[0]["id"] if rows else None
+    return post_id if _post_exists(post_id) else None
+
+
 def insert_cleaned_data(state: dict) -> str:
     """Insert one generated post and return its ID.
 
@@ -88,7 +119,7 @@ def insert_cleaned_data(state: dict) -> str:
         supabase.table("posts").insert(row).execute()
     except Exception as insert_error:
         try:
-            row_exists = _post_exists(post_id)
+            existing_id = _existing_post_id(post_id, row["raw_item_id"])
         except Exception as verification_error:
             logger.error(
                 "Post insert failed for %s and its outcome could not be verified; "
@@ -98,18 +129,27 @@ def insert_cleaned_data(state: dict) -> str:
             )
             raise insert_error from verification_error
 
-        if row_exists:
+        if existing_id == post_id:
             logger.warning(
                 "Post insert response failed for %s, but the row exists; treating it as committed",
                 post_id,
             )
             return post_id
 
-        if uploaded_path:
-            try:
-                supabase.storage.from_(BUCKET).remove([uploaded_path])
-            except Exception as cleanup_error:
-                logger.error("Image rollback failed for %s: %s", post_id, cleanup_error)
+        if existing_id is not None:
+            # An earlier attempt already published this raw item, so the unique index
+            # on posts.raw_item_id rejected this one. Report the post that exists:
+            # the caller's job is to record an outcome for the raw item, and the
+            # outcome is that it has a post. Our own image is now unreferenced.
+            logger.warning(
+                "Raw item %s already has post %s; treating this insert as a replay of it",
+                row["raw_item_id"],
+                existing_id,
+            )
+            _discard_image(uploaded_path)
+            return existing_id
+
+        _discard_image(uploaded_path)
         raise
 
     logger.info("Inserted post %s (%s)", slug, post_id)
