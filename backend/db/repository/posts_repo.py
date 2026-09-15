@@ -1,33 +1,8 @@
-from typing import Any
-
 from backend.db.client import supabase
 
-# Repository functions for posts and post content
-# Add more functions later as needed, following the same pattern
-
-
-# Shifted to use RPC to handle both post and post content insertion atomically
-def add_post(post: dict[str, Any], post_content: dict[str, Any]):
-    """
-    Docstring for add_post
-
-    :param post: Description
-    :type post: Dict[str, Any]
-    :param post_content: Description
-    :type post_content: Dict[str, Any]
-    """
-    try:
-        # Try to add post in posts db table
-        res = supabase.rpc(
-            "create_post_with_content",
-            {"post_json": post, "post_content_json": post_content},
-        ).execute()
-
-        if res.error:
-            raise Exception(f"Error adding post: {res.error.message}")
-
-    except Exception as e:
-        raise Exception(f"Exception in add_post: {str(e)}") from e
+# Repository functions for the flat `posts` table.
+# The redesign migration dropped `post_content` and the create_post_with_content
+# RPC, so the helpers that wrapped them are gone; add new ones in this pattern.
 
 
 def get_post_by_id(post_id: str):
@@ -47,29 +22,6 @@ def get_post_by_id(post_id: str):
 
     except Exception as e:
         raise Exception(f"Exception in get_post_by_id: {str(e)}") from e
-
-
-def get_post_content_by_id(post_id: str):
-    """
-    Docstring for get_post_content_by_id
-
-    :param post_id: Description
-    :type post_id: str
-    """
-    try:
-        post_content = (
-            supabase.table("post_content").select("*").eq("post_id", post_id).execute()
-        )
-
-        if post_content.error:
-            raise Exception(
-                f"Error fetching post content by id: {post_content.error.message}"
-            )
-
-        return post_content.data
-
-    except Exception as e:
-        raise Exception(f"Exception in get_post_content_by_id: {str(e)}") from e
 
 
 def user_liked_post(user_id: str, post_id: str):
