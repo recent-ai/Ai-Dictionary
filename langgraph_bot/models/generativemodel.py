@@ -48,12 +48,13 @@ def _groq(model: str, key_index: int, **kwargs) -> ChatGroq:
 triagemodel = _groq("openai/gpt-oss-120b", 0, temperature=0, max_retries=2)
 
 # Workhorse for the title/slug tools and the title_block node.
-groqmodel = _groq("llama-3.3-70b-versatile", 1, temperature=0.7, max_retries=2)
+groqmodel = _groq("openai/gpt-oss-120b", 1, temperature=0.7, max_retries=2)
 
-summarymodel = _groq("llama-3.3-70b-versatile", 2, temperature=0.7, max_retries=2)
-descriptionmodel = _groq("llama-3.3-70b-versatile", 3, temperature=0.7, max_retries=2)
+summarymodel = _groq("openai/gpt-oss-120b", 2, temperature=0.7, max_retries=2)
+descriptionmodel = _groq("openai/gpt-oss-120b", 3, temperature=0.7, max_retries=2)
 
 # Reasoning model for the (currently unwired) coding agent.
 codemodel = _groq(
-    "qwen/qwen3.6-27b", 0, temperature=0.7, reasoning_format="parsed", max_retries=3
+    "qwen/qwen3.8-27b", 0, temperature=0.7, reasoning_format="parsed", max_retries=3
 )
+w
