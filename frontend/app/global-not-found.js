@@ -1,7 +1,7 @@
 import { Manrope } from "next/font/google";
+import Image from "next/image";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import "./globals.css";
 
 const manrope = Manrope({

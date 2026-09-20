@@ -1,4 +1,10 @@
-export interface Block<T = any> {
+/**
+ * `unknown` rather than `any` for the default: every interface below narrows
+ * `data` to a concrete shape, so nothing actually relies on the default being
+ * assignable in both directions. `any` here silently disabled checking for any
+ * future `Block` used without a type argument.
+ */
+export interface Block<T = unknown> {
 	id: string;
 	type: string;
 	data: T;
