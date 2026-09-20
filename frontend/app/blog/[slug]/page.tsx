@@ -5,6 +5,7 @@ import { ArticleBody } from "@/components/article/ArticleBody";
 import { TableOfContents } from "@/components/article/TableOfContents";
 import { Footer } from "@/components/Footer";
 import { ScrollProgress } from "@/components/scroll-progress";
+import { normaliseSource } from "@/lib/archive";
 import { type BlogPost, getPublicArticle } from "@/lib/blog-data";
 import {
 	extractHeadings,
@@ -102,6 +103,15 @@ export default async function BlogPostPage({ params }: PageProps) {
 	const title = titleOf(post);
 	const date = titleBlock?.data.date ?? "";
 	const difficulty = titleBlock?.data.difficulty?.toLowerCase().trim();
+
+	// Folded to the archive's spelling before it reaches `hueFor`. The ingest
+	// adapters record one publication as "MarkTechPost", "Marktech Post" and
+	// "MarktechPost", and the hue is a hash of the raw string, so the unfolded
+	// name gives the same source a different dot here than on the rows it was
+	// clicked from — which is the one thing the dot is there to rule out.
+	const source = post.metadata?.source
+		? normaliseSource(post.metadata.source)
+		: null;
 	const rawMarkdown = explanationBlock?.data.content ?? "";
 	const markdown = sanitizeArticleMarkdown(rawMarkdown);
 	const headings = extractHeadings(markdown);
@@ -151,15 +161,15 @@ export default async function BlogPostPage({ params }: PageProps) {
 				<div className="mt-10 grid grid-cols-1 gap-x-16 lg:grid-cols-[minmax(0,1fr)_18rem]">
 					<header className="max-w-3xl lg:col-start-1 lg:row-start-1">
 						<p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-							{post.metadata?.source ? (
+							{source ? (
 								/* The same source dot as the archive rows, so a publication
 								   keeps one colour across the two places it appears. */
 								<span className="inline-flex items-center gap-2">
 									<span
-										className={`h-1.5 w-1.5 shrink-0 rounded-full ${hueFor(post.metadata.source).dot}`}
+										className={`h-1.5 w-1.5 shrink-0 rounded-full ${hueFor(source).dot}`}
 										aria-hidden="true"
 									/>
-									{post.metadata.source}
+									{source}
 								</span>
 							) : null}
 							{difficulty === "intermediate" || difficulty === "advanced" ? (

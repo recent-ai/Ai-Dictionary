@@ -4,36 +4,59 @@ import { createClient } from "@/lib/supabase/server";
 import { createStaticClient } from "@/lib/supabase/static";
 import type { AllContentBlock, TitleBlock } from "@/types/content";
 
-type PostMetadata = {
-	title: string | null;
-	source: string | null;
-	upload_date: string | null;
-	approveddate: string | null;
-	likescount: number | null;
+/**
+ * The columns an article page reads.
+ *
+ * The redesign flattened `post_content`'s JSON payload into real columns on
+ * `posts`, so summary, description, tags, difficulty and read time are read
+ * straight off the row instead of being dug back out of a blob.
+ */
+const POST_COLUMNS =
+	"id, slug, title, summary, description, source_name, image_url, tags, difficulty, read_time, published_at, created_at";
+
+type PostRow = {
+	id: string;
+	slug: string | null;
+	title: string;
+	summary: string | null;
+	description: string | null;
+	source_name: string | null;
+	image_url: string | null;
+	tags: string[] | null;
+	difficulty: string | null;
+	read_time: string | null;
+	published_at: string | null;
+	created_at: string | null;
 };
 
-type PostContentPayload = {
-	title?: Partial<TitleBlock["data"]>;
-	summary?: string;
-	description?: string;
-	slug?: string;
-	generated_image?: string | null;
+type PostMetadata = {
+	title: string | null;
+	/** `posts.source_name` — the publication an entry came from. */
+	source: string | null;
 };
 
 export type BlogPost = {
-	postid: string;
+	id: string;
 	slug: string;
-	metadata: PostMetadata | null;
-	content: PostContentPayload;
+	metadata: PostMetadata;
 	blocks: AllContentBlock[];
 };
 
-function isPostContentPayload(value: unknown): value is PostContentPayload {
-	return Boolean(value && typeof value === "object" && !Array.isArray(value));
-}
-
 function asString(value: unknown, fallback = "") {
 	return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+const DIFFICULTIES = ["beginner", "intermediate", "advanced"] as const;
+
+/**
+ * `posts.difficulty` is a free `text` column guarded by a CHECK, so it arrives
+ * as `string | null` and has to be narrowed before it can be a `TitleBlock`
+ * difficulty. Anything unrecognised comes back undefined and the badge is
+ * dropped, which is what the archive and the homepage already do with it.
+ */
+function asDifficulty(value: string | null): TitleBlock["data"]["difficulty"] {
+	const normalised = value?.toLowerCase().trim();
+	return DIFFICULTIES.find((level) => level === normalised);
 }
 
 function formatDate(value?: string | null) {
@@ -58,13 +81,8 @@ function formatDate(value?: string | null) {
 	}).format(date);
 }
 
-function makeBlocks(
-	content: PostContentPayload,
-	metadata: PostMetadata | null,
-): AllContentBlock[] {
-	const title = content.title ?? {};
-	const postTitle = asString(title.content, metadata?.title ?? "Untitled Post");
-	const imageUrl = asString(content.generated_image, "");
+function makeBlocks(row: PostRow): AllContentBlock[] {
+	const postTitle = asString(row.title, "Untitled Post");
 
 	const blocks: AllContentBlock[] = [
 		{
@@ -72,26 +90,32 @@ function makeBlocks(
 			type: "title",
 			data: {
 				content: postTitle,
-				// Normalise, don't just fall back. The generator writes `date` in
-				// whatever shape the source used, so raw ISO strings ("2026-07-12")
-				// were rendering next to formatted ones ("April 23, 2026") in the
-				// same list. formatDate passes through anything it can't parse.
-				date: formatDate(asString(title.date, metadata?.approveddate ?? "")),
-				tags: Array.isArray(title.tags) ? title.tags : [],
-				difficulty: title.difficulty ?? "beginner",
-				author: asString(title.author, "AI Dictionary Bot"),
-				estimated_time: asString(title.estimated_time, "5 min read"),
+				// `published_at` is the migration's coalesce of the old approved and
+				// upload dates, so it is the one date every entry has. formatDate
+				// passes through anything it cannot parse.
+				date: formatDate(row.published_at ?? row.created_at),
+				tags: row.tags ?? [],
+				// Difficulty and read time are left undefined when the pipeline did
+				// not record them, rather than defaulted to "beginner" and
+				// "5 min read". Those defaults are why the archive and the homepage
+				// both ignore these fields and recompute: a constant substituted for
+				// every entry read as measured while never varying. Now that both
+				// are real columns, absent means absent.
+				difficulty: asDifficulty(row.difficulty),
+				author: "AI Dictionary Bot",
+				estimated_time: row.read_time?.trim() || undefined,
 			},
 		},
 		{
 			id: "summary",
 			type: "summary",
 			data: {
-				content: asString(content.summary, "No summary available."),
+				content: asString(row.summary, "No summary available."),
 			},
 		},
 	];
 
+	const imageUrl = asString(row.image_url, "");
 	if (imageUrl) {
 		blocks.push({
 			id: "image",
@@ -108,31 +132,22 @@ function makeBlocks(
 		id: "description",
 		type: "explanation",
 		data: {
-			content: asString(content.description, "No description available."),
+			content: asString(row.description, "No description available."),
 		},
 	});
 
 	return blocks;
 }
 
-function mapRowToBlogPost(row: {
-	postid: string;
-	content: unknown;
-	posts: PostMetadata | PostMetadata[] | null;
-}): BlogPost | null {
-	if (!isPostContentPayload(row.content)) {
-		return null;
-	}
-
-	const metadata = Array.isArray(row.posts) ? row.posts[0] : row.posts;
-	const slug = asString(row.content.slug, row.postid);
-
+function mapRowToBlogPost(row: PostRow): BlogPost {
 	return {
-		postid: row.postid,
-		slug,
-		metadata,
-		content: row.content,
-		blocks: makeBlocks(row.content, metadata),
+		id: row.id,
+		// Every post written since the redesign has a slug — the CHECK constraint
+		// requires one — but the migrated archive predates it, so the id stands in
+		// rather than routing those entries to /blog/null.
+		slug: asString(row.slug, row.id),
+		metadata: { title: row.title, source: row.source_name },
+		blocks: makeBlocks(row),
 	};
 }
 
@@ -148,6 +163,11 @@ type PostsClient =
  * rows per response and truncates past it without saying so, and the corpus is
  * already 244 and growing — an unpaged query works right up until it silently
  * starts dropping the oldest quarter of the archive.
+ *
+ * Ordered by publication date rather than by id: paging needs a total order and
+ * the id is a random uuid, so `range()` over it returned pages in an order that
+ * meant nothing. `id` breaks ties so the sort stays deterministic across pages,
+ * and undated entries sort last to match the archive.
  */
 async function queryBlogPosts(supabase: PostsClient): Promise<BlogPost[]> {
 	const PAGE = 1000;
@@ -157,22 +177,10 @@ async function queryBlogPosts(supabase: PostsClient): Promise<BlogPost[]> {
 	for (let page = 0; page < MAX_PAGES; page++) {
 		const from = page * PAGE;
 		const { data, error } = await supabase
-			.from("post_content")
-			.select(
-				`
-				postid,
-				content,
-				posts (
-					title,
-					source,
-					upload_date,
-					approveddate,
-					likescount
-				)
-			`,
-			)
-			.eq("isoldpost", false)
-			.order("postid", { ascending: false })
+			.from("posts")
+			.select(POST_COLUMNS)
+			.order("published_at", { ascending: false, nullsFirst: false })
+			.order("id", { ascending: false })
 			.range(from, from + PAGE - 1);
 
 		if (error) {
@@ -181,10 +189,7 @@ async function queryBlogPosts(supabase: PostsClient): Promise<BlogPost[]> {
 		}
 
 		for (const row of data ?? []) {
-			const post = mapRowToBlogPost(row);
-			if (post !== null) {
-				posts.push(post);
-			}
+			posts.push(mapRowToBlogPost(row));
 		}
 
 		if (!data || data.length < PAGE) {
@@ -220,8 +225,8 @@ export async function getBlogPostBySlug(slug: string) {
  * One article, plus the entries either side of it.
  *
  * The neighbours come from the same order the archive uses — by publication
- * date, newest first — not the `postid` order the query returns, so "older" and
- * "newer" agree with the list you clicked through from. `getPublicBlogPosts` is
+ * date, newest first — not the order the query returns, so "older" and "newer"
+ * agree with the list you clicked through from. `getPublicBlogPosts` is
  * memoised for the render pass, so asking for the article and its neighbours
  * costs one query, not three.
  */

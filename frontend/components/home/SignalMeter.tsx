@@ -87,6 +87,26 @@ function axisTop(max: number) {
 	return Math.ceil(max / step) * step;
 }
 
+/**
+ * The volume half of the caption, stating its own direction.
+ *
+ * This used to hardcode "grew", which becomes a falsehood — "grew 0.5×" — the
+ * first month the pipeline reads less than it did at the start. The verb is
+ * read off the rounded multiplier rather than the raw ratio, so the word and
+ * the number can't disagree, and the multiplier stays above 1 in both
+ * directions: "fell 2.0×" is the sentence, not "fell 0.5×".
+ *
+ * `first` is guaranteed non-zero by the `read > 0` filter on the endpoints.
+ */
+function volumePhrase(first: number, last: number) {
+	const grew = last >= first;
+	const factor = (grew ? last / first : first / last).toFixed(1);
+	if (factor === "1.0") {
+		return "remained unchanged";
+	}
+	return `${grew ? "grew" : "fell"} ${factor}×`;
+}
+
 function MonthColumn({
 	bucket,
 	top,
@@ -173,11 +193,16 @@ export function SignalMeter({ stats }: { stats: PipelineStats }) {
 	// no longer print.
 	const tickValues = [top, top / 2, 0];
 
-	// The story's endpoints: the first and last months that actually scored
+	// The story's endpoints: the first and last months that actually read
 	// something. Those two carry the direct labels and the caption.
+	//
+	// A month that kept nothing still scored — 0% is a reading, not a gap — so
+	// only an unreadable count or an idle month is excluded. `read > 0` is what
+	// keeps the rate and the multiplier out of a division by zero; `kept > 0`
+	// was doing nothing but hiding the months the filter was strictest.
 	const scored = months.filter(
 		(m): m is MonthBucket & { read: number; kept: number } =>
-			m.read !== null && m.kept !== null && m.read > 0 && m.kept > 0,
+			m.read !== null && m.kept !== null && m.read > 0,
 	);
 	const firstScored = scored.at(0);
 	const lastScored = scored.at(-1);
@@ -199,9 +224,10 @@ export function SignalMeter({ stats }: { stats: PipelineStats }) {
 				)} to ${formatRate(
 					lastScored.kept,
 					lastScored.read,
-				)} in ${formatMonthYear(lastScored.month)}, while the volume read each month grew ${(
-					lastScored.read / firstScored.read
-				).toFixed(1)}×.`
+				)} in ${formatMonthYear(lastScored.month)}, while the volume read each month ${volumePhrase(
+					firstScored.read,
+					lastScored.read,
+				)}.`
 			: null;
 
 	return (
@@ -357,7 +383,10 @@ export function SignalMeter({ stats }: { stats: PipelineStats }) {
 export function PipelineReadout({ stats }: { stats: PipelineStats }) {
 	const { articlesRead, entriesKept, sources, firstRun } = stats;
 
-	if (!articlesRead || !entriesKept) {
+	// Null, not falsy. A count that failed to read has nothing to print, but a
+	// genuine zero is a reading and belongs on the board — and dropping the whole
+	// readout over it would take the sources and the start date with it.
+	if (articlesRead === null || entriesKept === null) {
 		return null;
 	}
 
@@ -365,8 +394,15 @@ export function PipelineReadout({ stats }: { stats: PipelineStats }) {
 	const rows: Array<[string, string]> = [
 		["Articles read", formatCount(articlesRead)],
 		["Entries kept", formatCount(entriesKept)],
-		["Signal-to-noise", `1 in ${Math.round(articlesRead / entriesKept)}`],
 	];
+	// "1 in Infinity" is not a ratio. With nothing kept there is no
+	// signal-to-noise to state, so the row is dropped rather than faked.
+	if (entriesKept > 0) {
+		rows.push([
+			"Signal-to-noise",
+			`1 in ${Math.round(articlesRead / entriesKept)}`,
+		]);
+	}
 	if (sources) {
 		rows.push(["Sources", String(sources)]);
 	}

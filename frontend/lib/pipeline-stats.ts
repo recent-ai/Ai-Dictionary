@@ -75,16 +75,15 @@ export async function getPipelineStats(): Promise<PipelineStats> {
 		return count ?? null;
 	};
 
+	// Every row in `posts` is a live entry. The old `isoldpost` filter went with
+	// `post_content` in the redesign — the migration carried every row across
+	// without preserving the flag, so there is nothing left to filter on.
 	const countLiveEntries = async () => {
 		const { count, error } = await supabase
-			.from("post_content")
-			.select("*", { count: "exact", head: true })
-			.eq("isoldpost", false);
+			.from("posts")
+			.select("*", { count: "exact", head: true });
 		if (error) {
-			console.error(
-				"Pipeline stats: count(post_content) failed",
-				error.message,
-			);
+			console.error("Pipeline stats: count(posts) failed", error.message);
 			return null;
 		}
 		return count ?? null;
@@ -126,8 +125,11 @@ export async function getPipelineStats(): Promise<PipelineStats> {
 			}
 		}
 
+		// Past the backstop the set is a floor, not a count. Returning it would
+		// print a confidently wrong "Sources" figure; null drops the row instead,
+		// which is the contract every other unreadable count here already uses.
 		console.warn("Pipeline stats: sources hit the page ceiling");
-		return names.size;
+		return null;
 	};
 
 	const edgeTimestamp = async (ascending: boolean) => {
@@ -177,7 +179,7 @@ export async function getPipelineStats(): Promise<PipelineStats> {
 
 		const countIn = async (
 			table: "raw_api_data" | "posts",
-			column: "created_at" | "approveddate",
+			column: "created_at" | "published_at",
 			from: Date,
 			to: Date,
 		): Promise<number | null> => {
@@ -207,7 +209,7 @@ export async function getPipelineStats(): Promise<PipelineStats> {
 				next.setUTCMonth(next.getUTCMonth() + 1);
 				const [read, kept] = await Promise.all([
 					countIn("raw_api_data", "created_at", start, next),
-					countIn("posts", "approveddate", start, next),
+					countIn("posts", "published_at", start, next),
 				]);
 				return { month: start.toISOString(), read, kept };
 			}),
