@@ -479,7 +479,7 @@ export function PipelineReadout({ stats }: { stats: PipelineStats }) {
 	// published set. The row is dropped outright unless the ratio is a real one —
 	// "1 in 0" and "1 in Infinity" are not statements about signal.
 	const ratio =
-		entriesKept > 0 && resolved !== null
+		entriesKept > 0 && resolved !== null && resolved >= entriesKept
 			? Math.round(resolved / entriesKept)
 			: 0;
 	const highlight = ratio >= 1 ? "Signal-to-noise" : null;
