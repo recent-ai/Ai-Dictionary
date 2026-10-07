@@ -57,4 +57,3 @@ descriptionmodel = _groq("openai/gpt-oss-120b", 3, temperature=0.7, max_retries=
 codemodel = _groq(
     "qwen/qwen3.8-27b", 0, temperature=0.7, reasoning_format="parsed", max_retries=3
 )
-w

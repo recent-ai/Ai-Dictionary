@@ -1,180 +1,152 @@
-import { Badge } from "@/components/ui/badge";
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { getBlogPosts } from "@/lib/blog-data";
-import { ArrowRight, BookOpen, Calendar, TriangleAlert } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { TriangleAlert } from "lucide-react";
+import { ArchiveIndex } from "@/components/archive/ArchiveIndex";
+import { Footer } from "@/components/Footer";
+import { buildArchive } from "@/lib/archive";
+import { getPublicBlogPosts } from "@/lib/blog-data";
 
-function getPostMetadata(
-	post: Awaited<ReturnType<typeof getBlogPosts>>[number],
-) {
-	const blocks = post.blocks;
-	const titleBlock = blocks.find((block) => block.type === "title");
-	const summaryBlock = blocks.find((block) => block.type === "summary");
-	const imageBlock = blocks.find((block) => block.type === "image");
+/**
+ * The archive index.
+ *
+ * This was a three-column card grid over all 244 entries, each card leading with
+ * a 224px image well. No post in the corpus has an image, so every one of those
+ * wells rendered an empty grey rectangle with a book icon in it — 244 of them,
+ * making the page 47,000 pixels tall and carrying no information at all.
+ *
+ * It's a list now, because that's what an archive is: a large set of the same
+ * kind of thing, read by scanning. Grouped by month, ruled rather than boxed,
+ * with the distribution and the source counts at the top so the shape of the
+ * collection is visible before you start scrolling it.
+ */
 
-	return {
-		slug: post.slug,
-		title: titleBlock?.data.content || "Untitled Post",
-		summary: summaryBlock?.data.content || "No summary available.",
-		coverImage: imageBlock?.data.url || null,
-		tags: titleBlock?.data.tags || [],
-		date: titleBlock?.data.date || "Unknown Date",
-		difficulty: titleBlock?.data.difficulty || "beginner",
-	};
-}
+/** Matches the homepage: the pipeline runs daily, this regenerates hourly. */
+export const revalidate = 3600;
+
+export const metadata = {
+	title: "Archive",
+	description:
+		"Every entry that survived the filter, grouped by month and searchable.",
+};
 
 export default async function BlogListingPage() {
-	let posts = [] as Awaited<ReturnType<typeof getBlogPosts>>;
+	let archive: ReturnType<typeof buildArchive> | null = null;
 	let loadError: string | null = null;
 
 	try {
-		posts = await getBlogPosts();
+		// The public client, not the cookie-aware one: reading cookies would force
+		// this route to render per-request, and the archive is the same for
+		// everyone. This is what keeps the page static.
+		archive = buildArchive(await getPublicBlogPosts());
 	} catch (error) {
 		loadError =
 			error instanceof Error ? error.message : "Unable to load blog posts.";
 	}
 
-	const allPosts = loadError ? [] : posts.map(getPostMetadata);
-
 	return (
-		<div className="min-h-screen bg-background text-foreground relative overflow-hidden pb-20">
-			{/* Hero / Spotlight Section - Refined & Professional */}
-			<section className="relative z-10 w-full py-12 md:py-16 px-6 md:px-12 border-b border-border/40 bg-background/50 backdrop-blur-sm">
-				<div className="container mx-auto max-w-7xl">
-					<div className="flex flex-col md:flex-row gap-6 md:items-end md:justify-between">
-						<div className="space-y-2">
-							<h1 className="text-4xl md:text-5xl font-black tracking-tighter bg-linear-to-b from-foreground via-foreground/90 to-foreground/30 bg-clip-text text-transparent font-sans pb-2">
-								The Knowledge Base
-							</h1>
-							<p className="text-lg text-muted-foreground max-w-xl leading-relaxed font-medium">
-								The definitive archive for the architects of the new era.
-							</p>
-						</div>
+		<div className="relative min-h-screen bg-background text-foreground">
+			{/* Same wash as the landing hero, so the archive reads as the same
+			    publication rather than a different template. `overflow-hidden` on the
+			    wrapper would clip the sticky month headers, so the wash is clipped by
+			    its own fixed height instead. */}
+			<div
+				className="ambient-wash pointer-events-none absolute inset-x-0 top-0 h-[30rem]"
+				aria-hidden="true"
+			/>
+			<main className="relative container mx-auto max-w-[1200px] px-4 pt-14 pb-20 sm:px-6 md:pt-20">
+				<header className="grid grid-cols-1 items-end gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-16">
+					<div>
+						<p className="flex items-center gap-2.5 text-sm text-muted-foreground">
+							<span
+								className="h-1.5 w-1.5 shrink-0 rounded-full bg-hue-2"
+								aria-hidden="true"
+							/>
+							Everything that survived the filter
+						</p>
+						<h1 className="mt-5 text-5xl leading-[1.05] font-bold tracking-tighter sm:text-6xl md:text-7xl">
+							The{" "}
+							{/* The swash is painted first and the word sits on top of it in
+							    document order. The hero does the same thing with `-z-10`,
+							    which works there only because its framer-motion wrapper
+							    happens to open a stacking context — without one, a negative
+							    z-index puts the highlight behind the page background and it
+							    disappears entirely. */}
+							<span className="relative inline-block">
+								<span
+									className="absolute inset-x-0 -bottom-1 h-3 -rotate-1 bg-brand/25"
+									aria-hidden="true"
+								/>
+								<span className="relative">Archive</span>
+							</span>
+						</h1>
+						<p className="mt-7 max-w-xl text-lg leading-relaxed text-muted-foreground">
+							Every entry the pipeline has kept, newest first. The bars are the
+							monthly count &mdash; click one to jump to that month, or narrow
+							the list by source and search.
+						</p>
 					</div>
-				</div>
-			</section>
-			<main className="container mx-auto px-6 md:px-12 z-10 relative mt-12">
-				{loadError ? (
-					<div
-						role="alert"
-						aria-live="assertive"
-						className="mx-auto flex max-w-2xl flex-col gap-6 rounded-3xl border border-destructive/30 bg-destructive/10 p-8 shadow-lg shadow-destructive/5"
-					>
-						<div className="flex items-start gap-4">
-							<div className="rounded-2xl bg-destructive/15 p-3 text-destructive">
-								<TriangleAlert className="h-6 w-6" />
+
+					{archive && archive.total > 0 ? (
+						<dl className="divide-y divide-border/60 border-y border-border/60">
+							<div className="flex items-baseline justify-between gap-4 py-3">
+								<dt className="text-sm text-muted-foreground">Entries</dt>
+								<dd className="text-lg font-semibold">{archive.total}</dd>
 							</div>
-							<div className="space-y-3">
-								<Badge variant="destructive" className="w-fit">
-									Unavailable
-								</Badge>
-								<div className="space-y-2">
-									<h2 className="text-2xl font-bold tracking-tight">
-										Blog feed unavailable
-									</h2>
-									<p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-										We could not load blog posts from the database. This is a
-										service issue, not an empty result set.
-									</p>
+							<div className="flex items-baseline justify-between gap-4 py-3">
+								<dt className="text-sm text-muted-foreground">Sources</dt>
+								<dd className="text-lg font-semibold">
+									{archive.sources.length}
+								</dd>
+							</div>
+							{archive.span ? (
+								<div className="flex items-baseline justify-between gap-4 py-3">
+									<dt className="text-sm text-muted-foreground">Covering</dt>
+									<dd className="text-right text-lg font-semibold">
+										{archive.span.from === archive.span.to
+											? archive.span.from
+											: `${archive.span.from} — ${archive.span.to}`}
+									</dd>
 								</div>
-								<p className="text-xs font-medium uppercase tracking-[0.24em] text-destructive/80">
+							) : null}
+						</dl>
+					) : null}
+				</header>
+
+				<div className="mt-10 md:mt-16">
+					{loadError ? (
+						<div
+							role="alert"
+							aria-live="assertive"
+							className="flex max-w-2xl gap-4 rounded-2xl border border-destructive/30 bg-destructive/5 p-6"
+						>
+							<TriangleAlert
+								className="mt-0.5 h-5 w-5 shrink-0 text-destructive"
+								aria-hidden="true"
+							/>
+							<div>
+								<h2 className="text-lg font-bold">Archive unavailable</h2>
+								<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+									The entries could not be loaded from the database. This is a
+									service fault, not an empty archive &mdash; the posts are
+									still there.
+								</p>
+								<p className="mt-3 font-mono text-xs text-destructive/80">
 									{loadError}
 								</p>
 							</div>
 						</div>
-					</div>
-				) : allPosts.length > 0 ? (
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						{allPosts.map((post) => (
-							<Link
-								key={post.slug}
-								href={`/blog/${post.slug}`}
-								className="group outline-none rounded-xl focus-visible:ring-ring/50 focus-visible:ring-[3px]"
-							>
-								<Card className="h-full flex flex-col border-border/40 bg-card/10 backdrop-blur-md overflow-hidden hover:bg-card/20 transition-all duration-500 hover:shadow-[0_0_30px_-5px_rgba(0,0,0,0)] hover:shadow-primary/20 group-hover:-translate-y-1 hover:border-primary/40 relative">
-									{/* Glow Effect on Hover */}
-									<div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-									<div className="relative h-56 overflow-hidden">
-										{post.coverImage ? (
-											<Image
-												src={post.coverImage}
-												alt={post.title}
-												fill
-												sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-												className="object-cover transition-transform duration-700 group-hover:scale-105"
-											/>
-										) : (
-											<div className="flex items-center justify-center h-full w-full bg-muted/20">
-												<BookOpen className="w-12 h-12 text-muted-foreground/20" />
-											</div>
-										)}
-										<div className="absolute inset-0 bg-linear-to-t from-background/80 to-transparent opacity-60" />
-										<div className="absolute top-3 right-3">
-											<Badge
-												variant="secondary"
-												className="bg-background/40 backdrop-blur-md border-white/10 text-foreground/80 hover:bg-background/60 transition-colors"
-											>
-												{post.difficulty}
-											</Badge>
-										</div>
-									</div>
-
-									<CardHeader className="space-y-3 relative">
-										<div className="flex flex-wrap gap-2">
-											{post.tags.slice(0, 2).map((tag) => (
-												<span
-													key={tag}
-													className="text-[10px] font-bold uppercase tracking-widest text-primary/70 group-hover:text-primary transition-colors"
-												>
-													[{tag}]
-												</span>
-											))}
-										</div>
-										<CardTitle className="text-xl font-bold leading-tight group-hover:text-primary transition-colors duration-300">
-											{post.title}
-										</CardTitle>
-									</CardHeader>
-
-									<CardContent className="grow text-muted-foreground text-sm line-clamp-2 leading-relaxed relative">
-										{post.summary}
-									</CardContent>
-
-									<CardFooter className="flex items-center justify-between border-t border-border/10 pt-4 mt-auto text-xs text-muted-foreground relative">
-										<span className="flex items-center gap-1.5 font-medium">
-											<Calendar className="w-3.5 h-3.5" />
-											{post.date}
-										</span>
-										<span className="flex items-center gap-1.5 font-medium group-hover:text-primary transition-colors">
-											Read Protocol{" "}
-											<ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-										</span>
-									</CardFooter>
-								</Card>
-							</Link>
-						))}
-					</div>
-				) : (
-					<div className="flex flex-col items-center justify-center py-32 text-center opacity-50">
-						<div className="bg-muted/10 p-8 rounded-full mb-6 backdrop-blur-sm">
-							<BookOpen className="w-12 h-12 text-muted-foreground" />
+					) : archive && archive.total > 0 ? (
+						<ArchiveIndex archive={archive} />
+					) : (
+						<div className="border-t border-border/60 py-24 text-center">
+							<p className="text-lg font-bold">The archive is empty.</p>
+							<p className="mt-2 text-sm text-muted-foreground">
+								Nothing has cleared the filter yet. Entries appear here as the
+								pipeline approves them.
+							</p>
 						</div>
-						<h3 className="text-xl font-bold mb-2 tracking-tight">
-							Signal Lost
-						</h3>
-						<p className="text-muted-foreground text-sm font-mono">
-							[FATAL_ERROR]: Database empty. Reinitializing...
-						</p>
-					</div>
-				)}
+					)}
+				</div>
 			</main>
+			<Footer />
 		</div>
 	);
 }

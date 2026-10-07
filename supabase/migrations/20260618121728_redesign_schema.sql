@@ -85,8 +85,16 @@ Select
     pc.content ->> 'generated_image',
     Array[] :: text[],
     p.likescount,
-    p.upload_date,
-    Coalesce(p.approveddate, p.upload_date)
+    -- `upload_date` and `approveddate` are `timestamp without time zone`, so the
+    -- implicit cast into these `timestamptz` columns would interpret them using
+    -- whatever TimeZone the session applying this migration happens to have. The
+    -- pipeline wrote them with `now()` on a naive column under Supabase's default
+    -- UTC, and the frontend has always formatted them with `timeZone: 'UTC'`, so
+    -- UTC is the correct reading -- stated here rather than inherited from the
+    -- environment, or the same row lands on a different calendar day depending on
+    -- where the migration was applied from.
+    p.upload_date At Time Zone 'UTC',
+    Coalesce(p.approveddate, p.upload_date) At Time Zone 'UTC'
 from posts p
 JOIN post_content pc on pc.postid = p.postid;
 
@@ -234,3 +242,138 @@ Revoke All On Function public.transition_raw_item_status(uuid, text, text, text)
 
 Grant Execute On Function public.claim_pending_raw_items(integer) To service_role;
 Grant Execute On Function public.transition_raw_item_status(uuid, text, text, text) To service_role;
+
+
+-- Aggregate-only pipeline figures for the public landing page.
+--
+-- `raw_api_data` has RLS on and no read policy, and should keep it that way: the
+-- rows carry scraped article bodies, source URLs and triage failure text, none of
+-- which belongs on a public page. But the landing page's entire claim — "we read
+-- N, we kept M" — is counted from that table. This function is the seam. Security
+-- Definer so it can count rows the caller cannot see; returning a single jsonb of
+-- aggregates so nothing row-level can escape through it. It is the only object
+-- granted to anon that reads raw_api_data at all.
+--
+-- search_path is emptied rather than set to `public` as the two service_role
+-- functions above do. Those are reachable only by a trusted role; this one is
+-- reachable by anyone with the publishable key, so every name it resolves is
+-- spelled out and none of them can be shadowed by a schema the caller controls.
+Create Or Replace Function public.pipeline_stats()
+Returns jsonb
+Language sql
+Stable
+Security Definer
+Set search_path = ''
+As $$
+    With cohort As (
+        Select
+            item.id,
+            item.status,
+            item.source_name,
+            -- UTC wall clock. Bucket edges must not drift with the server's
+            -- TimeZone setting, and the page labels them in UTC.
+            item.created_at At Time Zone 'UTC' As read_at
+        From public.raw_api_data As item
+        -- The redesign stamped every pre-existing row 'skipped'/'pre-queue backlog'
+        -- so the new run loop would leave it alone. Those are reads this pipeline
+        -- never made, so they are not throughput. `Is Not Distinct From` because a
+        -- NULL status would otherwise make the whole predicate NULL and silently
+        -- drop a live row.
+        Where Not (
+            item.status Is Not Distinct From 'skipped'
+            And item.last_error Is Not Distinct From 'pre-queue backlog'
+        )
+    ),
+    scored As (
+        Select
+            cohort.read_at,
+            cohort.source_name,
+            -- 'pending' and 'processing' are in flight: read, but not yet judged.
+            -- They are excluded from the keep rate's denominator rather than
+            -- counted as rejections.
+            (cohort.status In ('succeeded', 'skipped', 'failed')) As is_resolved,
+            Exists (
+                Select 1
+                From public.posts As post
+                Where post.raw_item_id = cohort.id
+            ) As is_kept
+        From cohort
+    ),
+    span As (
+        Select
+            Min(scored.read_at) As first_read,
+            Max(scored.read_at) As last_read,
+            -- Weekly while the history is short; a three-column monthly axis is
+            -- not a trend. Decided here, and reported back as `granularity` so
+            -- the chart labels cannot disagree with the buckets they label.
+            Case
+                When Max(scored.read_at) - Min(scored.read_at) < Interval '70 days'
+                    Then 'week'
+                Else 'month'
+            End As granularity
+        From scored
+    ),
+    edges As (
+        Select
+            span.granularity,
+            Generate_Series(
+                Date_Trunc(span.granularity, span.first_read),
+                Date_Trunc(span.granularity, span.last_read),
+                ('1 ' || span.granularity)::interval
+            ) As bucket_start
+        From span
+        Where span.first_read Is Not Null
+    ),
+    buckets As (
+        -- Left join so an idle week still produces a row. Dropping empty buckets
+        -- would compress the axis and make a gap look like continuous operation.
+        Select
+            edges.bucket_start,
+            edges.granularity,
+            Count(scored.read_at) As n_read,
+            Count(*) Filter (Where scored.is_kept) As n_kept,
+            Count(*) Filter (Where scored.is_resolved) As n_resolved
+        From edges
+        Left Join scored
+            On Date_Trunc(edges.granularity, scored.read_at) = edges.bucket_start
+        Group By edges.bucket_start, edges.granularity
+    )
+    Select jsonb_build_object(
+        'articles_read', (Select Count(*) From scored),
+        'entries_kept', (Select Count(*) Filter (Where scored.is_kept) From scored),
+        'resolved', (Select Count(*) Filter (Where scored.is_resolved) From scored),
+        'sources', (Select Count(Distinct scored.source_name) From scored),
+        -- Formatted here rather than left to jsonb's timestamp rendering, which
+        -- follows the session's DateStyle. The client parses these.
+        'first_run', (
+            Select To_Char(span.first_read, 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') From span
+        ),
+        'last_run', (
+            Select To_Char(span.last_read, 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') From span
+        ),
+        'granularity', (Select span.granularity From span),
+        'buckets', Coalesce(
+            (
+                Select jsonb_agg(
+                    jsonb_build_object(
+                        'start', To_Char(buckets.bucket_start, 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+                        'read', buckets.n_read,
+                        'kept', buckets.n_kept,
+                        'resolved', buckets.n_resolved,
+                        -- The window is still open, so its volume is not yet
+                        -- comparable to a closed one's.
+                        'partial', (
+                            buckets.bucket_start + ('1 ' || buckets.granularity)::interval
+                        ) > (Now() At Time Zone 'UTC')
+                    )
+                    Order By buckets.bucket_start
+                )
+                From buckets
+            ),
+            '[]'::jsonb
+        )
+    );
+$$;
+
+Revoke All On Function public.pipeline_stats() From Public;
+Grant Execute On Function public.pipeline_stats() To anon, authenticated, service_role;
