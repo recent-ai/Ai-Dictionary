@@ -1,8 +1,8 @@
 "use client";
 
-import { getCurrentUser, handleSignup, loginUser, logoutUser } from "@/lib/api";
+import { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useState, createContext, useContext, useEffect } from "react";
+import { getCurrentUser, handleSignup, loginUser, logoutUser } from "@/lib/api";
 
 interface User {
 	id: string;

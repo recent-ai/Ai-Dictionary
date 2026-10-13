@@ -1,175 +1,214 @@
 "use client";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import {
-	NavigationMenu,
-	NavigationMenuItem,
-	NavigationMenuLink,
-	NavigationMenuList,
-	navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import { ThemeToggle } from "@/components/ThemeToggle";
+
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
-import { useAuth } from "./auth/AuthContext";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "./auth/AuthContext";
 
 /**
- * Top navigation bar that displays site navigation, theme toggle, and user authentication controls.
+ * Top navigation bar.
  *
- * Renders navigation links (Blog, About, Search), a theme toggle, and either a Login button or the
- * authenticated user's email with a Logout button. On small screens the navigation collapses into a
- * toggleable mobile menu. Uses conditional rendering to hide the NavBar on authentication pages.
+ * This was the last piece of chrome still wearing the old design. It read as the
+ * odd one out for four specific reasons, all now fixed:
  *
- * @returns The navigation bar JSX element, or `null` when the current route is `/login` or `/signup`.
+ * - It was the only place on the site using shadcn's `NavigationMenu`, whose
+ *   `navigationMenuTriggerStyle()` puts a filled `bg-accent` pill behind each
+ *   link on hover. Every other link on the site is bare text that changes
+ *   colour, so the nav had three chunky blobs where the rest of the page has
+ *   hairlines and type. The menu primitive is gone — these are three links, not
+ *   a menu system with triggers and viewports.
+ * - Nothing marked the current page, even though `usePathname` was already
+ *   imported for the auth-page check. Every other list on this site tells you
+ *   where you are.
+ * - It had no colour at all, on a site that now runs a four-hue system.
+ * - The `Search` link pointed at `/search`, which does not exist in `app/` and
+ *   returns 404. A nav link to a missing page is a defect, so it's dropped
+ *   rather than shipped broken. Restoring it is one entry in `LINKS` once the
+ *   route lands.
+ *
+ * Colour arrives the same way it does on the widest elements elsewhere: a
+ * gradient hairline along the bottom edge instead of a flat border, plus the
+ * brand dot that `/about` uses on its eyebrow. Both are quotes of existing
+ * devices rather than new ones, which is the point — the nav should read as the
+ * top of this page, not as a component from another kit.
  */
+
+/** Single source for both the desktop row and the mobile sheet. */
+const LINKS = [
+	{ href: "/blog", label: "Blog" },
+	{ href: "/about", label: "About" },
+] as const;
+
 export default function Navbar() {
 	const [isOpen, setIsOpen] = useState(false);
 	const { user, loading, logoutAction } = useAuth();
 	const pathname = usePathname();
-	const isAuthPage = pathname === "/login" || pathname === "/signup";
-	if (isAuthPage) {
+
+	if (pathname === "/login" || pathname === "/signup") {
 		return null;
 	}
 
-	return (
-		<nav className="sticky top-0 w-full z-50 border-b border-border/40 bg-background/80 backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-700">
-			<div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 max-w-[1200px]">
-				<div className="flex items-center gap-2">
-					<Link href="/" className="flex items-center space-x-2">
-						<span className="font-bold text-xl tracking-tight">
-							AI Dictionary
-						</span>
-					</Link>
-				</div>
+	/** `/blog` stays marked while you're inside an entry — it's still the archive. */
+	const isActive = (href: string) =>
+		pathname === href || pathname.startsWith(`${href}/`);
 
-				{/* Nav Bar for Desktop and larger screens - Regular Navigation Menu using ShadCn Component */}
-				<div className="hidden md:flex items-center gap-6">
-					<NavigationMenu>
-						<NavigationMenuList>
-							<NavigationMenuItem>
-								<NavigationMenuLink
-									asChild
-									className={navigationMenuTriggerStyle()}
-								>
-									<Link href="/blog">Blog</Link>
-								</NavigationMenuLink>
-							</NavigationMenuItem>
-							<NavigationMenuItem>
-								<NavigationMenuLink
-									asChild
-									className={navigationMenuTriggerStyle()}
-								>
-									<Link href="/about">About</Link>
-								</NavigationMenuLink>
-							</NavigationMenuItem>
-							<NavigationMenuItem>
-								<NavigationMenuLink
-									asChild
-									className={navigationMenuTriggerStyle()}
-								>
-									<Link href="/search">Search</Link>
-								</NavigationMenuLink>
-							</NavigationMenuItem>
-						</NavigationMenuList>
-					</NavigationMenu>
+	async function handleLogout() {
+		// `logoutAction` already toasts the failure before rethrowing; this only
+		// consumes the rejection so it isn't an unhandled promise.
+		try {
+			await logoutAction();
+		} catch {
+			// handled upstream
+		}
+	}
+
+	return (
+		<nav className="animate-in fade-in slide-in-from-top-4 sticky top-0 z-50 w-full bg-background/85 backdrop-blur-md duration-700">
+			{/* The gradient hairline is the border. Same device as the rule above the
+			    meter and the cap on the readout column, so the nav's bottom edge is
+			    made of the same material as the page's other full-width rules. */}
+			<span
+				className="rule-accent absolute inset-x-0 bottom-0 h-px"
+				aria-hidden="true"
+			/>
+
+			<div className="relative container mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6">
+				{/* Brand dot then wordmark — the same pairing `/about` opens with. */}
+				<Link href="/" className="group flex items-center gap-2.5">
+					<span
+						className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand transition-transform duration-200 group-hover:scale-150"
+						aria-hidden="true"
+					/>
+					<span className="text-lg font-bold tracking-tight">
+						AI Dictionary
+					</span>
+				</Link>
+
+				<div className="hidden items-center gap-7 md:flex">
+					{LINKS.map((link) => (
+						<Link
+							key={link.href}
+							href={link.href}
+							aria-current={isActive(link.href) ? "page" : undefined}
+							className={`relative py-1 text-sm transition-colors ${
+								isActive(link.href)
+									? "font-medium text-foreground"
+									: "text-muted-foreground hover:text-foreground"
+							}`}
+						>
+							{link.label}
+							{/* The current page gets a brand underline. Weight changes with
+							    it, so the mark isn't colour-only. */}
+							{isActive(link.href) ? (
+								<span
+									className="absolute -bottom-0.5 inset-x-0 h-0.5 rounded-full bg-brand"
+									aria-hidden="true"
+								/>
+							) : null}
+						</Link>
+					))}
+
 					<ThemeToggle />
-					{!loading && !user && (
-						<>
-							<Link href="/login">
-								<Button variant="ghost">Login</Button>
-							</Link>
-						</>
-					)}
-					{!loading && user && (
-						<>
-							<span className="text-sm">Hello, {user.email}</span>
+
+					{!loading && !user ? (
+						/* Rounded-full outline, matching the hero's secondary action. The
+						   old ghost variant was invisible until hovered. */
+						<Button
+							asChild
+							variant="outline"
+							size="sm"
+							className="rounded-full border-border px-4"
+						>
+							<Link href="/login">Login</Link>
+						</Button>
+					) : null}
+					{!loading && user ? (
+						<div className="flex items-center gap-3">
+							<span className="max-w-[12rem] truncate text-sm text-muted-foreground">
+								{user.email}
+							</span>
 							<Button
-								variant="ghost"
-								onClick={async () => {
-									try {
-										await logoutAction();
-									} catch (error) {
-										toast.error(
-											error instanceof Error ? error.message : "Logout failed",
-										);
-									}
-								}}
+								variant="outline"
+								size="sm"
+								className="rounded-full border-border px-4"
+								onClick={handleLogout}
 							>
 								Logout
 							</Button>
-						</>
-					)}
+						</div>
+					) : null}
 				</div>
 
-				{/* Mobile Nav bar - Logic here is - It stays hidden until md breakpoint and then collapses into a menu button which can be clicked to open the nav bar */}
-				<div className="md:hidden flex items-center gap-4">
+				<div className="flex items-center gap-2 md:hidden">
 					<ThemeToggle />
 					<button
-						className="text-foreground"
+						type="button"
+						aria-label={isOpen ? "Close menu" : "Open menu"}
+						aria-expanded={isOpen}
+						className="rounded-md p-1.5 text-foreground transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 						onClick={() => setIsOpen(!isOpen)}
 					>
-						{isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+						{isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
 					</button>
 				</div>
 			</div>
 
-			{isOpen && (
-				<div className="md:hidden border-t border-border/40 bg-background">
-					<div className="container py-4 flex flex-col gap-4 px-4">
-						<Link
-							href="/blog"
-							className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-							onClick={() => setIsOpen(false)}
-						>
-							Blog
-						</Link>
-						<Link
-							href="/about"
-							className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-							onClick={() => setIsOpen(false)}
-						>
-							About
-						</Link>
-						<Link
-							href="/search"
-							className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-							onClick={() => setIsOpen(false)}
-						>
-							Search
-						</Link>
-						{!loading && !user && (
-							<>
-								<Link href="/login">
-									<Button variant="ghost">Login</Button>
-								</Link>
-							</>
-						)}
-						{!loading && user && (
-							<>
-								<span className="text-sm">Hello, {user.email}</span>
+			{isOpen ? (
+				<div className="border-t border-border/60 bg-background md:hidden">
+					<div className="container mx-auto flex max-w-[1200px] flex-col px-4 py-2 sm:px-6">
+						{LINKS.map((link) => (
+							<Link
+								key={link.href}
+								href={link.href}
+								aria-current={isActive(link.href) ? "page" : undefined}
+								onClick={() => setIsOpen(false)}
+								/* The active row is marked by a brand left edge here — an
+								   underline would collide with the row rules. */
+								className={`border-b border-border/40 py-3 text-sm transition-colors last:border-b-0 ${
+									isActive(link.href)
+										? "border-l-2 border-l-brand pl-3 font-medium text-foreground"
+										: "text-muted-foreground hover:text-foreground"
+								}`}
+							>
+								{link.label}
+							</Link>
+						))}
+
+						<div className="pt-3 pb-1">
+							{!loading && !user ? (
 								<Button
-									variant="ghost"
-									onClick={async () => {
-										try {
-											await logoutAction();
-										} catch (error) {
-											toast.error(
-												error instanceof Error
-													? error.message
-													: "Logout failed",
-											);
-										}
-									}}
+									asChild
+									variant="outline"
+									size="sm"
+									className="w-full rounded-full border-border"
+									onClick={() => setIsOpen(false)}
 								>
-									Logout
+									<Link href="/login">Login</Link>
 								</Button>
-							</>
-						)}
+							) : null}
+							{!loading && user ? (
+								<div className="flex flex-col gap-2">
+									<span className="truncate text-sm text-muted-foreground">
+										{user.email}
+									</span>
+									<Button
+										variant="outline"
+										size="sm"
+										className="w-full rounded-full border-border"
+										onClick={handleLogout}
+									>
+										Logout
+									</Button>
+								</div>
+							) : null}
+						</div>
 					</div>
 				</div>
-			)}
+			) : null}
 		</nav>
 	);
 }
