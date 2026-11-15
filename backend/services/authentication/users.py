@@ -1,3 +1,5 @@
+import logging
+import os
 import uuid
 
 from fastapi import Depends, Request
@@ -8,28 +10,66 @@ from fastapi_users.authentication import (
     JWTStrategy,
 )
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
+from fastapi_users.exceptions import InvalidPasswordException
 
-from services.authentication.dbs import User, get_user_db
+from backend.services.authentication.dbs import User, get_user_db
 
-SECRET = "SECRET"
+logger = logging.getLogger(__name__)
+
+# The secret that signs every login cookie and every reset/verify token.
+#
+# It used to be the literal string "SECRET". That is not a weak key, it is a
+# published one: this repository is public, so anyone could mint a cookie for
+# any account. The value now comes from the environment, and the app refuses to
+# start without it unless it is explicitly running in development.
+#
+#     python -c "import secrets; print(secrets.token_urlsafe(48))"
+#
+# Rotating this signs everyone out, which is the intended cost of a leak.
+_is_development = os.getenv("ENVIRONMENT", "").strip().lower() == "development"
+_configured_secret = os.getenv("AUTH_SECRET")
+
+if _configured_secret is None:
+    if not _is_development:
+        raise RuntimeError(
+            "AUTH_SECRET is not set. Generate one with "
+            '`python -c "import secrets; print(secrets.token_urlsafe(48))"` '
+            "and add it to the environment before starting in production."
+        )
+    # Kept only so a fresh clone runs without setup. Never used in production,
+    # because the branch above raises first.
+    SECRET = "development-only-secret"
+    logger.warning(
+        "AUTH_SECRET is not set; using a development-only secret. "
+        "Set AUTH_SECRET before deploying."
+    )
+else:
+    if not _configured_secret.strip():
+        raise RuntimeError("AUTH_SECRET must not be empty or whitespace-only.")
+    if len(_configured_secret.strip().encode("utf-8")) < 32:
+        raise RuntimeError(
+            "AUTH_SECRET must be at least 32 bytes. Generate one with "
+            '`python -c "import secrets; print(secrets.token_urlsafe(48))"`.'
+        )
+    SECRET = _configured_secret
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
 
+    async def validate_password(self, password: str, user) -> None:
+        if len(password) < 8:
+            raise InvalidPasswordException(
+                reason="Password must be at least 8 characters long."
+            )
+
     async def on_after_register(self, user: User, request: Request | None = None):
-        print(f"User {user.id} has registered.")
+        logger.info("User %s has registered.", user.id)
 
-    async def on_after_forgot_password(
-        self, user: User, token: str, request: Request | None = None
-    ):
-        print(f"User {user.id} has forgot their password. Reset token: {token}")
-
-    async def on_after_request_verify(
-        self, user: User, token: str, request: Request | None = None
-    ):
-        print(f"Verification requested for user {user.id}. Verification token: {token}")
+    # Password reset and verification have no delivery mechanism yet. Their
+    # routes were removed rather than left printing secrets to the server log,
+    # so there is nothing to implement here until an email sender exists.
 
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):  # noqa: B008
@@ -48,7 +88,9 @@ async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db
 
 
 cookie_transport = CookieTransport(
-    cookie_max_age=3600, cookie_secure=True, cookie_samesite="none"
+    cookie_max_age=3600,
+    cookie_secure=not _is_development,
+    cookie_samesite="lax" if _is_development else "none",
 )
 
 

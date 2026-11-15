@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 import { SUPABASE_STORAGE_PREFIX, supabaseImageHost } from "./lib/image-hosts";
+import { publicSupabaseConfig } from "./lib/supabase/config";
+
+publicSupabaseConfig();
 
 /** Local Supabase only exists while you're developing against it. */
 const isDev = process.env.NODE_ENV === "development";
@@ -12,9 +15,6 @@ if (!supabaseHost) {
 }
 
 const nextConfig: NextConfig = {
-	experimental: {
-		globalNotFound: true,
-	},
 	images: {
 		// Local IPs are rejected by the optimizer unless this is on, so without it
 		// the 127.0.0.1 entry below is inert and dev images 400. It stays off

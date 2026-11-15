@@ -2,9 +2,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, Depends, FastAPI
 
-from services.authentication.dbs import User, create_db_and_tables
-from services.authentication.schema import UserCreate, UserRead, UserUpdate
-from services.authentication.users import (
+from backend.services.authentication.dbs import User, create_db_and_tables
+from backend.services.authentication.schema import UserCreate, UserRead, UserUpdate
+from backend.services.authentication.users import (
     auth_backend,
     current_active_user,
     fastapi_users,
@@ -31,16 +31,10 @@ router.include_router(
     prefix="/auth",
     tags=["auth"],
 )
-router.include_router(
-    fastapi_users.get_reset_password_router(),
-    prefix="/auth",
-    tags=["auth"],
-)
-router.include_router(
-    fastapi_users.get_verify_router(UserRead),
-    prefix="/auth",
-    tags=["auth"],
-)
+# There is no email sender yet, so the reset-password and verify routes are not
+# mounted. They previously existed and printed their tokens to the server log —
+# a reset token in a log is a password. Restore both routes together with the
+# mail transport, not before it.
 router.include_router(
     fastapi_users.get_users_router(UserRead, UserUpdate),
     prefix="/users",
